@@ -1,0 +1,29 @@
+# vscode
+
+.cache/*
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+*.vsix
+
+# cmake
+
+src/shaders/headers/*.h
+src/shaders/snippets/headers/*.h
+build/*
+release/*
+CMakeUserPresets.json
+
+imgui.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
