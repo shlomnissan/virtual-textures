@@ -14,8 +14,7 @@ Texture2D::Texture2D(std::shared_ptr<Image> image) {
 auto Texture2D::InitTexture(std::shared_ptr<Image> image) -> void {
     glGenTextures(1, &texture_id_);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
@@ -27,7 +26,11 @@ auto Texture2D::InitTexture(std::shared_ptr<Image> image) -> void {
         GL_UNSIGNED_BYTE,
         image->Data()
     );
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
+
     is_loaded_ = true;
 }
 

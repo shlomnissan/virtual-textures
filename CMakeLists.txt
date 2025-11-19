@@ -26,6 +26,8 @@ set(CORE_SOURCES
     src/core/event_dispatcher.h
     src/core/geometry.cpp
     src/core/geometry.h
+    src/core/framebuffer.cpp
+    src/core/framebuffer.h
     src/core/image.h
     src/core/orthographic_camera.cpp
     src/core/orthographic_camera.h
