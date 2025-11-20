@@ -15,7 +15,18 @@ public:
 
     auto SetImage(std::shared_ptr<Image> image) -> void;
 
-    auto Bind() -> void;
+    auto InitTexture(
+        int width,
+        int height,
+        unsigned internal_format,
+        unsigned format,
+        unsigned type,
+        const void* data
+    ) -> void;
+
+    auto Bind() const -> void;
+
+    auto Id() const { return texture_id_; }
 
     [[nodiscard]] auto IsLoaded() const -> bool {
         return is_loaded_;
@@ -24,10 +35,6 @@ public:
     ~Texture2D();
 
 private:
-    std::shared_ptr<Image> image_ {nullptr};
-
-    auto InitTexture(std::shared_ptr<Image> image) -> void;
-
     unsigned int texture_id_;
 
     bool is_loaded_ {false};

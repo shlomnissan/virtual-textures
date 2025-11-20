@@ -5,6 +5,8 @@
 
 #include <glad/glad.h>
 
+#include "core/texture2d.h"
+
 class Framebuffer {
 public:
     Framebuffer(int width, int height);
@@ -17,6 +19,10 @@ public:
     auto IsComplete() const -> bool;
 
     auto Bind() const -> void;
+
+    auto Width() const { return width_; }
+
+    auto Height() const { return height_; }
 
     ~Framebuffer();
 

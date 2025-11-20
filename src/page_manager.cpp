@@ -151,7 +151,7 @@ auto PageManager::RequestPage(const PageId& id) -> void {
     const auto path = std::format("assets/tiles/{}.png", id);
 
     pages_[id.lod][idx].state = PageState::Loading;
-     loader_->LoadAsync(path, [this, id, idx](auto result) {
+     loader_->Load(path, [this, id, idx](auto result) {
         if (result) {
             pages_[id.lod][idx].texture.SetImage(result.value());
             pages_[id.lod][idx].state = PageState::Loaded;

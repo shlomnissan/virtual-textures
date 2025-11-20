@@ -4,7 +4,7 @@
 #include "framebuffer.h"
 
 Framebuffer::Framebuffer(int width, int height) : width_(width), height_(height) {
-    glGenBuffers(1, &id_);
+    glGenFramebuffers(1, &id_);
 }
 
 auto Framebuffer::AddColorAttachment(
@@ -32,5 +32,5 @@ auto Framebuffer::IsComplete() const -> bool {
 }
 
 Framebuffer::~Framebuffer() {
-    if (id_) glDeleteBuffers(1, &id_);
+    if (id_) glDeleteFramebuffers(1, &id_);
 }
