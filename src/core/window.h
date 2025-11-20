@@ -17,9 +17,15 @@ public:
 
     auto Start(const std::function<void(const double delta)>& program) -> void;
 
+    auto BufferWidth() const { return buffer_width_; }
+    auto BufferHeight() const { return buffer_height_; }
+
     ~Window();
 
 private:
+    int buffer_width_ = 0;
+    int buffer_height_ = 0;
+
     GLFWwindow* window_ {nullptr};
     Timer timer_ {};
 };

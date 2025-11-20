@@ -20,6 +20,8 @@ public:
 
     auto Bind() const -> void;
 
+    auto Unbind() const -> void;
+
     auto Width() const { return width_; }
 
     auto Height() const { return height_; }

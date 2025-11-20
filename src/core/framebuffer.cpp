@@ -23,7 +23,10 @@ auto Framebuffer::AddColorAttachment(
 
 auto Framebuffer::Bind() const -> void {
     glBindFramebuffer(GL_FRAMEBUFFER, id_);
-    glViewport(0, 0, width_, height_);
+}
+
+auto Framebuffer::Unbind() const -> void {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 auto Framebuffer::IsComplete() const -> bool {

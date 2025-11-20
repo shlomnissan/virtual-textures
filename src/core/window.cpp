@@ -70,9 +70,8 @@ Window::Window(int width, int height, std::string_view title) {
 
     imguiInitialize(window_);
 
-    auto buffer_width {0}, buffer_height {0};
-    glfwGetFramebufferSize(window_, &buffer_width, &buffer_height);
-    glViewport(0, 0, buffer_width, buffer_height);
+    glfwGetFramebufferSize(window_, &buffer_width_, &buffer_height_);
+    glViewport(0, 0, buffer_width_, buffer_height_);
 }
 
 auto Window::Start(const std::function<void(const double delta)> &program) -> void {
