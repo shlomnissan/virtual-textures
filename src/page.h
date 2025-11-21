@@ -11,18 +11,13 @@
 
 #include "core/texture2d.h"
 #include "loaders/image_loader.h"
+#include "types.h"
 
 enum class PageState {
     Unloaded,
     Loading,
     Loaded,
     Error
-};
-
-struct PageId {
-    unsigned lod;
-    int x;
-    int y;
 };
 
 template<>

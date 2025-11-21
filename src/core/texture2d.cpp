@@ -46,6 +46,11 @@ auto Texture2D::InitTexture(
     glGenTextures(1, &texture_id_);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
 
+    width_ = width;
+    height_ = height;
+    format_ = format;
+    type_ = type;
+
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
@@ -72,6 +77,11 @@ auto Texture2D::Bind() const -> void {
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
+}
+
+auto Texture2D::Read(void* dst) const -> void {
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
+    glGetTexImage(GL_TEXTURE_2D, 0, format_, type_, dst);
 }
 
 Texture2D::~Texture2D() {

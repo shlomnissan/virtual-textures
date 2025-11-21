@@ -46,6 +46,12 @@ auto main() -> int {
         {ShaderType::kFragmentShader, _SHADER_feedback_frag}
     }};
 
+    feedback_shader.Use();
+    feedback_shader.SetUniform("u_TextureSize", 8192.0f);
+    feedback_shader.SetUniform("u_PageSize", 1024.0f);
+    feedback_shader.SetUniform("u_BufferScreenRatio", 256.0f / 1024.0f);
+    feedback_shader.SetUniform("u_MaxMipLevel", 3);
+
     auto page_shader = Shaders {{
         {ShaderType::kVertexShader, _SHADER_page_vert},
         {ShaderType::kFragmentShader, _SHADER_page_frag}
@@ -98,9 +104,22 @@ auto main() -> int {
         geometry.Draw(page_shader);
     };
 
+    constexpr auto clear_value = 0xFFFFFFFFu;
+
     window.Start([&]([[maybe_unused]] const double _){
         controls.Update();
         feedbackPass();
+
+        auto feedback_data = std::vector<GLuint>(
+            feedback_texture.Width() * feedback_texture.Height()
+        );
+
+        feedback_texture.Read(feedback_data.data());
+        for (auto packed : feedback_data) {
+            if (packed == clear_value) continue;
+            // TODO: read feedback data
+        }
+
         mainPass();
     });
 

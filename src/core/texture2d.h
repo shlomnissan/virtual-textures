@@ -26,7 +26,13 @@ public:
 
     auto Bind() const -> void;
 
-    auto Id() const { return texture_id_; }
+    auto Read(void* dst) const -> void;
+
+    [[nodiscard]] auto Id() const { return texture_id_; }
+
+    [[nodiscard]] auto Width() const { return width_; }
+
+    [[nodiscard]] auto Height() const { return height_; }
 
     [[nodiscard]] auto IsLoaded() const -> bool {
         return is_loaded_;
@@ -36,6 +42,12 @@ public:
 
 private:
     unsigned int texture_id_;
+
+    int width_ {0};
+    int height_ {0};
+
+    unsigned format_;
+    unsigned type_;
 
     bool is_loaded_ {false};
 };

@@ -12,6 +12,12 @@ struct Dimensions {
     auto AspectRatio() const { return width / height; }
 };
 
+struct PageId {
+    unsigned lod;
+    int x;
+    int y;
+};
+
 struct Box2 {
     glm::vec2 min {0.0f};
     glm::vec2 max {0.0f};
