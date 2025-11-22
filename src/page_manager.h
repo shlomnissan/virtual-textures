@@ -4,6 +4,7 @@
 #pragma once
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "core/orthographic_camera.h"
@@ -26,6 +27,7 @@ public:
     auto Debug(const OrthographicCamera& camera) const -> void;
 
 private:
+    std::set<PageId> visible_pages_cache_;
     std::vector<int> tiles_x_per_lod_;
     std::vector<int> tiles_y_per_lod_;
     std::vector<std::vector<Page>> pages_;
@@ -45,4 +47,6 @@ private:
     auto GetPageIndex(const PageId& id) const -> int;
 
     auto RequestPage(const PageId& id) -> void;
+
+    auto GetLowResPages() -> std::vector<Page>&;
 };

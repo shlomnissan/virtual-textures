@@ -115,11 +115,9 @@ auto main() -> int {
 
         auto pages = page_manager.GetVisiblePages();
         for (auto& page : pages) {
-            if (page->state == PageState::Loaded) {
-                page->texture.Bind();
-                page_shader.SetUniform("u_ModelView", camera.View() * page->Transform());
-                geometry.Draw(page_shader);
-            }
+            page->texture.Bind();
+            page_shader.SetUniform("u_ModelView", camera.View() * page->Transform());
+            geometry.Draw(page_shader);
         }
     };
 

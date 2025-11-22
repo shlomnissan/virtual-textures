@@ -5,7 +5,6 @@
 
 #include <format>
 #include <print>
-#include <set>
 
 #include <imgui.h>
 
@@ -32,10 +31,14 @@ PageManager::PageManager(
 
     GeneratePages();
 
-    const auto& low_res_pages = pages_[lods_ - 1];
-    for (const auto& page : low_res_pages) {
+    for (auto& page : GetLowResPages()) {
+        page.visible = true;
         RequestPage(page.id);
     }
+}
+
+auto PageManager::GetLowResPages() -> std::vector<Page>& {
+    return pages_[lods_ - 1];
 }
 
 auto PageManager::GetPageId(unsigned packed) const -> PageId {
@@ -53,7 +56,12 @@ auto PageManager::IngestPages(const std::vector<unsigned>& data) -> void {
         visible_pages.emplace(GetPageId(packed));
     }
 
+    // lod is consistent across pages
     curr_lod_ = visible_pages.begin()->lod;
+
+    for (const auto& page_id : visible_pages_cache_) {
+        pages_[page_id.lod][GetPageIndex(page_id)].visible = false;
+    }
 
     for (const auto& page_id : visible_pages) {
         auto& page = pages_[page_id.lod][GetPageIndex(page_id)];
@@ -68,13 +76,15 @@ auto PageManager::GetVisiblePages() -> std::vector<Page*> {
     auto visible_pages = std::vector<Page*> {};
     visible_pages.reserve(64);
 
-    auto& low_res_pages = pages_[lods_ - 1];
-    for (auto& page : low_res_pages) {
+    // low-res pages are always rendered
+    for (auto& page : GetLowResPages()) {
         visible_pages.push_back(&page);
     }
 
     for (auto& page : pages_[curr_lod_]) {
-        visible_pages.push_back(&page);
+        if (page.visible && page.state == PageState::Loaded) {
+            visible_pages.push_back(&page);
+        }
     }
 
     return visible_pages;
