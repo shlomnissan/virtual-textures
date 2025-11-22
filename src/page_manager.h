@@ -28,8 +28,8 @@ public:
 
 private:
     std::set<PageId> visible_pages_cache_;
-    std::vector<int> tiles_x_per_lod_;
-    std::vector<int> tiles_y_per_lod_;
+    std::vector<int> pages_x_per_lod_;
+    std::vector<int> pages_y_per_lod_;
     std::vector<std::vector<Page>> pages_;
 
     std::shared_ptr<ImageLoader> loader_;

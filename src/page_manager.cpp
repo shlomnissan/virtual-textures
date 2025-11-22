@@ -25,8 +25,8 @@ PageManager::PageManager(
     page_size_(page_size),
     lods_(lods)
 {
-    tiles_x_per_lod_.resize(lods);
-    tiles_y_per_lod_.resize(lods);
+    pages_x_per_lod_.resize(lods);
+    pages_y_per_lod_.resize(lods);
 
     pages_.resize(lods);
 
@@ -107,17 +107,17 @@ auto PageManager::GeneratePages() -> void {
     for (auto lod = 0u; lod < lods_; ++lod) {
         auto lod_w = image_size_ / static_cast<float>(1 << lod);
         auto lod_h = image_size_ / static_cast<float>(1 << lod);
-        auto tiles_x = static_cast<int>(std::ceil(lod_w / page_size_));
-        auto tiles_y = static_cast<int>(std::ceil(lod_h / page_size_));
-        auto lod_scale = 1.0f / static_cast<float>(tiles_x);
+        auto pages_x = static_cast<int>(std::ceil(lod_w / page_size_));
+        auto pages_y = static_cast<int>(std::ceil(lod_h / page_size_));
+        auto lod_scale = 1.0f / static_cast<float>(pages_x);
 
-        tiles_x_per_lod_[lod] = tiles_x;
-        tiles_y_per_lod_[lod] = tiles_y;
+        pages_x_per_lod_[lod] = pages_x;
+        pages_y_per_lod_[lod] = pages_y;
 
-        pages_[lod].reserve(tiles_x * tiles_y);
+        pages_[lod].reserve(pages_x * pages_y);
 
-        for (auto y = 0; y < tiles_y; ++y) {
-            for (auto x = 0; x < tiles_x; ++x) {
+        for (auto y = 0; y < pages_y; ++y) {
+            for (auto x = 0; x < pages_x; ++x) {
                 auto id = PageId {lod, x, y};
 
                 auto size = glm::vec2 {
@@ -137,12 +137,12 @@ auto PageManager::GeneratePages() -> void {
 }
 
 auto PageManager::GetPageIndex(const PageId& id) const -> int {
-    return id.y * tiles_x_per_lod_[id.lod] + id.x;
+    return id.y * pages_x_per_lod_[id.lod] + id.x;
 }
 
 auto PageManager::RequestPage(const PageId& id) -> void {
     const auto idx = GetPageIndex(id);
-    const auto path = std::format("assets/tiles/{}.png", id);
+    const auto path = std::format("assets/pages/{}.png", id);
 
     pages_[id.lod][idx].state = PageState::Loading;
      loader_->Load(path, [this, id, idx](auto result) {
@@ -151,7 +151,7 @@ auto PageManager::RequestPage(const PageId& id) -> void {
             pages_[id.lod][idx].state = PageState::Loaded;
         } else {
             pages_[id.lod][idx].state = PageState::Unloaded;
-            std::println("Failed to load tile {}", id.lod);
+            std::println("Failed to load pages {}", id.lod);
         }
     });
 }

@@ -29,12 +29,12 @@ void main() {
     float mip = clamp(log2(texel_footprint), 0.0, float(u_MaxMipLevel));
     uint mip_level = uint(mip);
 
-    float tiles_max = u_TextureSize / u_PageSize;
-    uint tiles_mip  = uint(tiles_max / pow(2.0, float(mip_level)));
-    tiles_mip = max(tiles_mip, 1u); // safety clamp
+    float page_max = u_TextureSize / u_PageSize;
+    uint page_mip  = uint(page_max / pow(2.0, float(mip_level)));
+    page_mip = max(page_mip, 1u); // safety clamp
 
-    float page_x = clamp(v_TexCoord.x * float(tiles_mip), 0.0, float(tiles_mip) - 1.0);
-    float page_y = clamp(v_TexCoord.y * float(tiles_mip), 0.0, float(tiles_mip) - 1.0);
+    float page_x = clamp(v_TexCoord.x * float(page_mip), 0.0, float(page_mip) - 1.0);
+    float page_y = clamp(v_TexCoord.y * float(page_mip), 0.0, float(page_mip) - 1.0);
 
     uint data = PackPageData(mip_level, uint(page_x), uint(page_y));
     o_Feedback = uvec4(data, 0, 0, 0);
