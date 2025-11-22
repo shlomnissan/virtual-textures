@@ -22,21 +22,27 @@
 #include "shaders/headers/page_vert.h"
 #include "shaders/headers/page_frag.h"
 
-auto main() -> int {
-    const auto window_dims = Dimensions {1024.0f, 1024.0f};
+#include "page_manager.h"
 
+constexpr auto window_size = 1024.0f;
+constexpr auto buffer_size = 256.0f;
+constexpr auto page_size = 1024.0f;
+constexpr auto image_size = 8192.0f;
+constexpr auto lods = 4;
+
+auto main() -> int {
     auto window = Window {
-        static_cast<int>(window_dims.width),
-        static_cast<int>(window_dims.height),
+        static_cast<int>(window_size),
+        static_cast<int>(window_size),
         "Virtual Textures"
     };
 
-    auto camera = OrthographicCamera {0.0f, 1024.0f, 1024.0f, 0.0f, -1.0f, 1.0f};
+    auto camera = OrthographicCamera {0.0f, window_size, window_size, 0.0f, -1.0f, 1.0f};
     auto controls = ZoomPanCamera {&camera};
 
     const auto geometry = PlaneGeometry {{
-        .width = 1024.0f,
-        .height = 1024.0f,
+        .width = page_size,
+        .height = page_size,
         .width_segments = 1,
         .height_segments = 1
     }};
@@ -47,17 +53,23 @@ auto main() -> int {
     }};
 
     feedback_shader.Use();
-    feedback_shader.SetUniform("u_TextureSize", 8192.0f);
-    feedback_shader.SetUniform("u_PageSize", 1024.0f);
-    feedback_shader.SetUniform("u_BufferScreenRatio", 256.0f / 1024.0f);
-    feedback_shader.SetUniform("u_MaxMipLevel", 3);
+    feedback_shader.SetUniform("u_TextureSize", image_size);
+    feedback_shader.SetUniform("u_PageSize", page_size);
+    feedback_shader.SetUniform("u_BufferScreenRatio", buffer_size / window_size);
+    feedback_shader.SetUniform("u_MaxMipLevel", lods - 1);
 
     auto page_shader = Shaders {{
         {ShaderType::kVertexShader, _SHADER_page_vert},
         {ShaderType::kFragmentShader, _SHADER_page_frag}
     }};
 
-    auto feedback_buffer = Framebuffer {256, 256};
+    auto page_manager = PageManager {image_size, page_size, lods};
+
+    auto feedback_buffer = Framebuffer {
+        static_cast<int>(buffer_size),
+        static_cast<int>(buffer_size)
+    };
+
     auto feedback_texture = Texture2D {};
     feedback_texture.InitTexture(
         feedback_buffer.Width(),
@@ -84,7 +96,9 @@ auto main() -> int {
         feedback_shader.Use();
         feedback_shader.SetUniform("u_Projection", camera.projection);
 
-        auto model = glm::translate(glm::mat4(1.0f), glm::vec3 {512.0f, 512.0f, 0.0f});
+        auto offset = page_size / 2;
+        auto model = glm::translate(glm::mat4(1.0f), glm::vec3 {offset, offset, 0.0f});
+
         feedback_shader.SetUniform("u_ModelView", camera.View() * model);
         geometry.Draw(feedback_shader);
 
@@ -99,28 +113,30 @@ auto main() -> int {
         page_shader.Use();
         page_shader.SetUniform("u_Projection", camera.projection);
 
-        auto model = glm::translate(glm::mat4(1.0f), glm::vec3 {512.0f, 512.0f, 0.0f});
-        page_shader.SetUniform("u_ModelView", camera.View() * model);
-        geometry.Draw(page_shader);
+        auto pages = page_manager.GetVisiblePages();
+        for (auto& page : pages) {
+            if (page->state == PageState::Loaded) {
+                page->texture.Bind();
+                page_shader.SetUniform("u_ModelView", camera.View() * page->Transform());
+                geometry.Draw(page_shader);
+            }
+        }
     };
 
-    constexpr auto clear_value = 0xFFFFFFFFu;
+    auto page_data = std::vector<GLuint>(
+        feedback_texture.Width() * feedback_texture.Height()
+    );
 
     window.Start([&]([[maybe_unused]] const double _){
         controls.Update();
+
         feedbackPass();
-
-        auto feedback_data = std::vector<GLuint>(
-            feedback_texture.Width() * feedback_texture.Height()
-        );
-
-        feedback_texture.Read(feedback_data.data());
-        for (auto packed : feedback_data) {
-            if (packed == clear_value) continue;
-            // TODO: read feedback data
-        }
+        feedback_texture.Read(page_data.data());
+        page_manager.IngestPages(page_data);
 
         mainPass();
+
+        page_manager.Debug(camera);
     });
 
     return 0;

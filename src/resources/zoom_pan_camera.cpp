@@ -57,8 +57,8 @@ auto ZoomPanCamera::Zoom() -> void {
     auto zoom_factor = 1.0f - curr_scroll_ * 0.01f;
     zoom_factor_ *= zoom_factor;
 
-    if (zoom_factor_ < 0.01f || zoom_factor_ > 5.0f) {
-        zoom_factor_ = glm::clamp(zoom_factor_, 0.01f, 5.0f);
+    if (zoom_factor_ < 0.1f || zoom_factor_ > 2.0f) {
+        zoom_factor_ = glm::clamp(zoom_factor_, 0.1f, 2.0f);
         return;
     }
 
