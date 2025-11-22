@@ -20,22 +20,11 @@ enum class PageState {
     Error
 };
 
-template<>
-struct std::formatter<PageId> : std::formatter<std::string> {
-    auto format(const PageId& id, auto& ctx) const {
-        return std::formatter<std::string>::format(
-            std::format("{}_{}_{}", id.lod, id.x, id.y),
-            ctx
-        );
-    }
-};
-
 struct Page {
     PageId id;
 
     glm::vec2 position;
     glm::vec2 size;
-
     float scale;
 
     bool visible {false};

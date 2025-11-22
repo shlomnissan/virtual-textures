@@ -5,94 +5,100 @@
 
 #include <format>
 #include <print>
+#include <set>
 
 #include <imgui.h>
 
+namespace {
+
+constexpr auto clear_value = 0xFFFFFFFFu;
+
+}
+
 PageManager::PageManager(
-    const Dimensions& image_dims,
-    const Dimensions& window_dims,
+    const float image_size,
     const float page_size,
     const int lods
 ) :
     loader_(ImageLoader::Create()),
-    image_dims_(image_dims),
-    window_dims_(window_dims),
+    image_size_(image_size),
     page_size_(page_size),
-    max_lod_(lods - 1)
+    lods_(lods)
 {
     tiles_x_per_lod_.resize(lods);
     tiles_y_per_lod_.resize(lods);
+
     pages_.resize(lods);
+
     GeneratePages();
+
+    const auto& low_res_pages = pages_[lods_ - 1];
+    for (const auto& page : low_res_pages) {
+        RequestPage(page.id);
+    }
 }
 
-auto PageManager::Update(const OrthographicCamera& camera) -> void {
-    const auto this_lod = ComputeLod(camera);
+auto PageManager::GetPageId(unsigned packed) const -> PageId {
+    return PageId {
+        .lod = packed & 0x1Fu,
+        .x = static_cast<int>((packed >> 5) & 0x3Fu),
+        .y = static_cast<int>((packed >> 11) & 0x3Fu)
+    };
+}
 
-    if (first_frame_) {
-        prev_lod_ = this_lod;
-        curr_lod_ = this_lod;
-        first_frame_ = false;
+auto PageManager::IngestPages(const std::vector<unsigned>& data) -> void {
+    auto visible_pages = std::set<PageId> {};
+    for (auto packed : data) {
+        if (packed == clear_value) continue;
+        visible_pages.emplace(GetPageId(packed));
     }
 
-    if (this_lod != curr_lod_) {
-        prev_lod_ = curr_lod_;
-        curr_lod_ = this_lod;
-    }
+    curr_lod_ = visible_pages.begin()->lod;
 
-    const auto visible_bounds = ComputeVisibleBounds(camera);
-    for (auto lod = 0; lod <= max_lod_; ++lod) {
-        for (auto& page : pages_[lod]) {
-            page.visible = IsPageVisible(page, visible_bounds);
-            if (page.visible && lod == curr_lod_ && page.state == PageState::Unloaded) {
-                RequestPage(page.id);
-            }
+    for (const auto& page_id : visible_pages) {
+        auto& page = pages_[page_id.lod][GetPageIndex(page_id)];
+        page.visible = true;
+        if (page.state != PageState::Loaded) {
+            RequestPage(page_id);
         }
     }
 }
 
 auto PageManager::GetVisiblePages() -> std::vector<Page*> {
-    std::vector<Page*> visible_pages;
+    auto visible_pages = std::vector<Page*> {};
+    visible_pages.reserve(64);
 
-    // always include low-res tiles
-    for (auto& page : pages_[max_lod_]) {
-        if (page.visible && page.state == PageState::Loaded) {
-            visible_pages.push_back(&page);
-        }
+    auto& low_res_pages = pages_[lods_ - 1];
+    for (auto& page : low_res_pages) {
+        visible_pages.push_back(&page);
     }
 
-    if (curr_lod_ == max_lod_) return visible_pages;
-
     for (auto& page : pages_[curr_lod_]) {
-        if (page.state == PageState::Loaded) {
-            visible_pages.push_back(&page);
-        }
+        visible_pages.push_back(&page);
     }
 
     return visible_pages;
 }
 
-auto PageManager::Debug() const -> void {
+auto PageManager::Debug(const OrthographicCamera& camera) const -> void {
+    auto camera_scale = glm::length(glm::vec3 {camera.transform[0]});
+
     ImGui::SetNextWindowFocus();
     ImGui::Begin("Page Manager");
-
-    ImGui::Text(
-        "Image dimensions: %dx%d",
-        static_cast<int>(image_dims_.width),
-        static_cast<int>(image_dims_.height)
-    );
-
+    ImGui::Text("Image size: %d", static_cast<int>(image_size_));
     ImGui::Text("Current LOD: %d", curr_lod_);
+    ImGui::Text("Camera width: %.2f", camera.Width() * camera_scale);
+
     ImGui::End();
 }
 
 auto PageManager::GeneratePages() -> void {
-    for (auto lod = 0u; lod <= max_lod_; ++lod) {
-        auto lod_w = image_dims_.width / static_cast<float>(1 << lod);
-        auto lod_h = image_dims_.height / static_cast<float>(1 << lod);
-        auto lod_scale = static_cast<float>(pow(2, lod));
+    for (auto lod = 0u; lod < lods_; ++lod) {
+        auto lod_w = image_size_ / static_cast<float>(1 << lod);
+        auto lod_h = image_size_ / static_cast<float>(1 << lod);
         auto tiles_x = static_cast<int>(std::ceil(lod_w / page_size_));
         auto tiles_y = static_cast<int>(std::ceil(lod_h / page_size_));
+        auto lod_scale = 1.0f / static_cast<float>(tiles_x);
 
         tiles_x_per_lod_[lod] = tiles_x;
         tiles_y_per_lod_[lod] = tiles_y;
@@ -105,7 +111,7 @@ auto PageManager::GeneratePages() -> void {
 
                 auto size = glm::vec2 {
                     page_size_ * lod_scale,
-                    page_size_ * lod_scale,
+                    page_size_ * lod_scale
                 };
 
                 auto position = glm::vec2 {
@@ -117,29 +123,6 @@ auto PageManager::GeneratePages() -> void {
             }
         }
     }
-}
-
-auto PageManager::ComputeLod(const OrthographicCamera& camera) const -> int {
-    auto scale_x = glm::length(glm::vec3{camera.transform[0]});
-    auto virtual_width = camera.Width() * scale_x;
-    auto world_units_per_pixel = virtual_width / window_dims_.width;
-    auto lod = std::log2(world_units_per_pixel);
-    return std::clamp(static_cast<int>(lod), 0, static_cast<int>(max_lod_));
-}
-
-auto PageManager::IsPageVisible(const Page& page, const Box2& visible_bounds) const -> bool {
-    auto bounds = Box2 {.min = page.position, .max = page.position + page.size};
-    return visible_bounds.Intersects(bounds);
-}
-
-auto PageManager::ComputeVisibleBounds(const OrthographicCamera& camera) const -> Box2 {
-    auto inv_vp = glm::inverse(camera.projection * camera.View());
-    auto top_left = inv_vp * glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);
-    auto bottom_right = inv_vp * glm::vec4(1.0f, -1.0f, 0.0, 1.0f);
-    return Box2::FromPoints(
-        {top_left.x, top_left.y},
-        {bottom_right.x, bottom_right.y}
-    );
 }
 
 auto PageManager::GetPageIndex(const PageId& id) const -> int {

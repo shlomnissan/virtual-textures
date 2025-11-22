@@ -6,8 +6,6 @@
 #include <memory>
 #include <vector>
 
-#include <glm/vec2.hpp>
-
 #include "core/orthographic_camera.h"
 #include "loaders/image_loader.h"
 #include "page.h"
@@ -16,17 +14,16 @@
 class PageManager {
 public:
     PageManager(
-        const Dimensions& image_dims,
-        const Dimensions& window_dims,
+        const float image_size,
         const float page_size,
         const int lods
     );
 
-    auto Update(const OrthographicCamera& camera) -> void;
+    auto IngestPages(const std::vector<unsigned>& page_data) -> void;
 
     auto GetVisiblePages() -> std::vector<Page*>;
 
-    auto Debug() const -> void;
+    auto Debug(const OrthographicCamera& camera) const -> void;
 
 private:
     std::vector<int> tiles_x_per_lod_;
@@ -35,27 +32,15 @@ private:
 
     std::shared_ptr<ImageLoader> loader_;
 
-    Dimensions image_dims_;
-    Dimensions window_dims_;
-
-    Box2 visible_bounds_;
-
+    float image_size_;
     float page_size_ {0};
 
-    unsigned max_lod_ {0};
+    unsigned lods_ {0};
     unsigned curr_lod_ {0};
-    unsigned prev_lod_ {0};
-
-    bool first_frame_ {true};
-    bool show_wireframes_ {false};
 
     auto GeneratePages() -> void;
 
-    auto ComputeLod(const OrthographicCamera& camera) const -> int;
-
-    auto IsPageVisible(const Page& page, const Box2& visible_bounds) const -> bool;
-
-    auto ComputeVisibleBounds(const OrthographicCamera& camera) const -> Box2;
+    auto GetPageId(unsigned packed_data) const -> PageId;
 
     auto GetPageIndex(const PageId& id) const -> int;
 
