@@ -6,8 +6,8 @@ layout(location = 0) out uvec4 o_Feedback;
 
 in vec2 v_TexCoord;
 
-uniform float u_TextureSize;
-uniform float u_PageSize;
+uniform vec2 u_TextureSize;
+uniform vec2 u_PageSize;
 uniform float u_BufferScreenRatio;
 uniform int u_MaxMipLevel;
 
@@ -19,23 +19,21 @@ uint PackPageData(uint mip, uint pageX, uint pageY) {
 }
 
 void main() {
-    vec2 dx = dFdx(v_TexCoord);
-    vec2 dy = dFdy(v_TexCoord);
+    vec2 texel_dx = dFdx(v_TexCoord) * u_TextureSize;
+    vec2 texel_dy = dFdy(v_TexCoord) * u_TextureSize;
 
-    float uv_deriv = max(length(dx), length(dy));
-    float texel_footprint = uv_deriv * u_TextureSize * u_BufferScreenRatio;
-    texel_footprint = max(texel_footprint, 1e-8); // avoid log2(0)
+    float rho = max(length(texel_dx), length(texel_dy));
+    float texel_footprint = max(rho * u_BufferScreenRatio, 1e-8); // avoid log2(0)
+    float mip_f = clamp(log2(texel_footprint), 0.0, float(u_MaxMipLevel));
+    uint  mip_level = uint(mip_f);
 
-    float mip = clamp(log2(texel_footprint), 0.0, float(u_MaxMipLevel));
-    uint mip_level = uint(mip);
+    vec2 pages = u_TextureSize / u_PageSize;
+    vec2 page_mip_f = max(pages / exp2(float(mip_level)), vec2(1.0));
 
-    float page_max = u_TextureSize / u_PageSize;
-    uint page_mip  = uint(page_max / pow(2.0, float(mip_level)));
-    page_mip = max(page_mip, 1u); // safety clamp
+    float page_x_f = clamp(v_TexCoord.x * page_mip_f.x, 0.0, page_mip_f.x - 1.0);
+    float page_y_f = clamp(v_TexCoord.y * page_mip_f.y, 0.0, page_mip_f.y - 1.0);
 
-    float page_x = clamp(v_TexCoord.x * float(page_mip), 0.0, float(page_mip) - 1.0);
-    float page_y = clamp(v_TexCoord.y * float(page_mip), 0.0, float(page_mip) - 1.0);
+    uint data = PackPageData(mip_level, uint(page_x_f), uint(page_y_f));
 
-    uint data = PackPageData(mip_level, uint(page_x), uint(page_y));
     o_Feedback = uvec4(data, 0, 0, 0);
 }

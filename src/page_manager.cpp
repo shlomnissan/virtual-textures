@@ -16,12 +16,12 @@ constexpr auto clear_value = 0xFFFFFFFFu;
 }
 
 PageManager::PageManager(
-    const float image_size,
-    const float page_size,
+    const glm::vec2& texture_size,
+    const glm::vec2& page_size,
     const int lods
 ) :
     loader_(ImageLoader::Create()),
-    image_size_(image_size),
+    texture_size_(texture_size),
     page_size_(page_size),
     lods_(lods)
 {
@@ -96,7 +96,7 @@ auto PageManager::Debug(const OrthographicCamera& camera) const -> void {
 
     ImGui::SetNextWindowFocus();
     ImGui::Begin("Page Manager");
-    ImGui::Text("Image size: %d", static_cast<int>(image_size_));
+    ImGui::Text("Image size: %d", static_cast<int>(texture_size_.x));
     ImGui::Text("Current LOD: %d", curr_lod_);
     ImGui::Text("Camera width: %.2f", camera.Width() * camera_scale);
 
@@ -105,10 +105,10 @@ auto PageManager::Debug(const OrthographicCamera& camera) const -> void {
 
 auto PageManager::GeneratePages() -> void {
     for (auto lod = 0u; lod < lods_; ++lod) {
-        auto lod_w = image_size_ / static_cast<float>(1 << lod);
-        auto lod_h = image_size_ / static_cast<float>(1 << lod);
-        auto pages_x = static_cast<int>(std::ceil(lod_w / page_size_));
-        auto pages_y = static_cast<int>(std::ceil(lod_h / page_size_));
+        auto lod_w = texture_size_.x / static_cast<float>(1 << lod);
+        auto lod_h = texture_size_.y / static_cast<float>(1 << lod);
+        auto pages_x = static_cast<int>(std::ceil(lod_w / page_size_.x));
+        auto pages_y = static_cast<int>(std::ceil(lod_h / page_size_.y));
         auto lod_scale = 1.0f / static_cast<float>(pages_x);
 
         pages_x_per_lod_[lod] = pages_x;
@@ -121,8 +121,8 @@ auto PageManager::GeneratePages() -> void {
                 auto id = PageId {lod, x, y};
 
                 auto size = glm::vec2 {
-                    page_size_ * lod_scale,
-                    page_size_ * lod_scale
+                    page_size_.x * lod_scale,
+                    page_size_.y * lod_scale
                 };
 
                 auto position = glm::vec2 {
@@ -149,9 +149,10 @@ auto PageManager::RequestPage(const PageId& id) -> void {
         if (result) {
             pages_[id.lod][idx].texture.SetImage(result.value());
             pages_[id.lod][idx].state = PageState::Loaded;
+            std::println("Loaded page {}", id);
         } else {
             pages_[id.lod][idx].state = PageState::Unloaded;
-            std::println("Failed to load pages {}", id.lod);
+            std::println("Failed to load page {}", id);
         }
     });
 }

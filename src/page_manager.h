@@ -7,6 +7,8 @@
 #include <set>
 #include <vector>
 
+#include <glm/vec2.hpp>
+
 #include "core/orthographic_camera.h"
 #include "loaders/image_loader.h"
 #include "page.h"
@@ -15,8 +17,8 @@
 class PageManager {
 public:
     PageManager(
-        const float image_size,
-        const float page_size,
+        const glm::vec2& texture_size,
+        const glm::vec2& page_size,
         const int lods
     );
 
@@ -34,8 +36,8 @@ private:
 
     std::shared_ptr<ImageLoader> loader_;
 
-    float image_size_;
-    float page_size_ {0};
+    glm::vec2 texture_size_;
+    glm::vec2 page_size_;
 
     unsigned lods_ {0};
     unsigned curr_lod_ {0};

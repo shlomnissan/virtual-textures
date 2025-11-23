@@ -108,6 +108,10 @@ auto Shaders::SetUniform(std::string_view uniform, const float f) const -> void 
     glUniform1f(GetUniform(uniform), f);
 }
 
+auto Shaders::SetUniform(std::string_view uniform, const glm::vec2& vec) const -> void {
+    glUniform2fv(GetUniform(uniform), 1, &vec[0]);
+}
+
 auto Shaders::SetUniform(std::string_view uniform, const glm::vec3& vec) const -> void {
     glUniform3fv(GetUniform(uniform), 1, &vec[0]);
 }

@@ -24,25 +24,25 @@
 
 #include "page_manager.h"
 
-constexpr auto window_size = 1024.0f;
-constexpr auto buffer_size = 256.0f;
-constexpr auto page_size = 1024.0f;
-constexpr auto image_size = 8192.0f;
+constexpr auto window_size = glm::vec2(1024.0f, 1024.0f);
+constexpr auto buffer_size = glm::vec2(256.0f, 256.0f);
+constexpr auto page_size = glm::vec2(1024.0f, 1024.0f);
+constexpr auto texture_size = glm::vec2(8192.0f, 8192.0f);
 constexpr auto lods = 4;
 
 auto main() -> int {
     auto window = Window {
-        static_cast<int>(window_size),
-        static_cast<int>(window_size),
+        static_cast<int>(window_size.x),
+        static_cast<int>(window_size.y),
         "Virtual Textures"
     };
 
-    auto camera = OrthographicCamera {0.0f, window_size, window_size, 0.0f, -1.0f, 1.0f};
+    auto camera = OrthographicCamera {0.0f, window_size.x, window_size.y, 0.0f, -1.0f, 1.0f};
     auto controls = ZoomPanCamera {&camera};
 
     const auto geometry = PlaneGeometry {{
-        .width = page_size,
-        .height = page_size,
+        .width = page_size.x,
+        .height = page_size.y,
         .width_segments = 1,
         .height_segments = 1
     }};
@@ -52,10 +52,13 @@ auto main() -> int {
         {ShaderType::kFragmentShader, _SHADER_feedback_frag}
     }};
 
+    auto ratio_x = buffer_size.x / window_size.x;
+    auto ratio_y = buffer_size.y / window_size.y;
+
     feedback_shader.Use();
-    feedback_shader.SetUniform("u_TextureSize", image_size);
+    feedback_shader.SetUniform("u_TextureSize", texture_size);
     feedback_shader.SetUniform("u_PageSize", page_size);
-    feedback_shader.SetUniform("u_BufferScreenRatio", buffer_size / window_size);
+    feedback_shader.SetUniform("u_BufferScreenRatio", std::max(ratio_x, ratio_y));
     feedback_shader.SetUniform("u_MaxMipLevel", lods - 1);
 
     auto page_shader = Shaders {{
@@ -63,11 +66,11 @@ auto main() -> int {
         {ShaderType::kFragmentShader, _SHADER_page_frag}
     }};
 
-    auto page_manager = PageManager {image_size, page_size, lods};
+    auto page_manager = PageManager {texture_size, page_size, lods};
 
     auto feedback_buffer = Framebuffer {
-        static_cast<int>(buffer_size),
-        static_cast<int>(buffer_size)
+        static_cast<int>(buffer_size.x),
+        static_cast<int>(buffer_size.y)
     };
 
     auto feedback_texture = Texture2D {};
@@ -96,8 +99,9 @@ auto main() -> int {
         feedback_shader.Use();
         feedback_shader.SetUniform("u_Projection", camera.projection);
 
-        auto offset = page_size / 2;
-        auto model = glm::translate(glm::mat4(1.0f), glm::vec3 {offset, offset, 0.0f});
+        auto offset_x = page_size.x / 2.0f;
+        auto offset_y = page_size.y / 2.0f;
+        auto model = glm::translate(glm::mat4(1.0f), glm::vec3 {offset_x, offset_y, 0.0f});
 
         feedback_shader.SetUniform("u_ModelView", camera.View() * model);
         geometry.Draw(feedback_shader);
