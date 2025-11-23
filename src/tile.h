@@ -13,15 +13,15 @@
 #include "loaders/image_loader.h"
 #include "types.h"
 
-enum class PageState {
+enum class TileState {
     Unloaded,
     Loading,
     Loaded,
     Error
 };
 
-struct Page {
-    PageId id;
+struct Tile {
+    TileId id;
 
     glm::vec2 position;
     glm::vec2 size;
@@ -29,12 +29,12 @@ struct Page {
 
     bool visible {false};
 
-    PageState state {PageState::Unloaded};
+    TileState state {TileState::Unloaded};
 
     Texture2D texture;
 
-    Page(
-        const PageId& id,
+    Tile(
+        const TileId& id,
         const glm::vec2 position,
         const glm::vec2 size,
         const float scale

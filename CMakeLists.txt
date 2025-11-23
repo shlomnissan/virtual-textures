@@ -3,13 +3,13 @@
 
 cmake_minimum_required(VERSION 3.22.1)
 
-project(virtual-textures)
+project(gpu-tile-residency)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(EXECUTABLE virtual_textures)
+set(EXECUTABLE gpu_tile_residency)
 
 message(${CMAKE_SOURCE_DIR}/cmake)
 
@@ -60,10 +60,10 @@ add_executable(${EXECUTABLE}
     ${CORE_SOURCES}
     ${EXTERNAL_SOURCES}
     src/main.cpp
-    src/page.cpp
-    src/page.h
-    src/page_manager.cpp
-    src/page_manager.h
+    src/tile.cpp
+    src/tile.h
+    src/tile_manager.cpp
+    src/tile_manager.h
     src/types.h
 )
 

@@ -12,17 +12,17 @@ struct Dimensions {
     auto AspectRatio() const { return width / height; }
 };
 
-struct PageId {
+struct TileId {
     unsigned lod;
     int x;
     int y;
 
-    auto operator<=>(const PageId&) const = default;
+    auto operator<=>(const TileId&) const = default;
 };
 
 template<>
-struct std::formatter<PageId> : std::formatter<std::string> {
-    auto format(const PageId& id, auto& ctx) const {
+struct std::formatter<TileId> : std::formatter<std::string> {
+    auto format(const TileId& id, auto& ctx) const {
         return std::formatter<std::string>::format(
             std::format("{}_{}_{}", id.lod, id.x, id.y),
             ctx
