@@ -24,7 +24,7 @@ public:
         const void* data
     ) -> void;
 
-    auto Bind() const -> void;
+    auto Bind() -> void;
 
     auto Read(void* dst) const -> void;
 
@@ -34,20 +34,17 @@ public:
 
     [[nodiscard]] auto Height() const { return height_; }
 
-    [[nodiscard]] auto IsLoaded() const -> bool {
-        return is_loaded_;
-    }
-
     ~Texture2D();
 
 private:
+    std::shared_ptr<Image> image_cache_ {nullptr};
+
     unsigned int texture_id_;
+    unsigned int format_;
+    unsigned int type_;
 
     int width_ {0};
     int height_ {0};
-
-    unsigned format_;
-    unsigned type_;
 
     bool is_loaded_ {false};
 };

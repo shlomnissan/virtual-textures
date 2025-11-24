@@ -67,7 +67,7 @@ auto TileManager::IngestTiles(const std::vector<unsigned>& data) -> void {
     for (const auto& tile_id : visible_tiles) {
         auto& tile = tiles_[tile_id.lod][GetTileIndex(tile_id)];
         tile.visible = true;
-        if (tile.state != TileState::Loaded) {
+        if (tile.state == TileState::Unloaded) {
             RequestTile(tile_id);
         }
     }
@@ -145,7 +145,7 @@ auto TileManager::RequestTile(const TileId& id) -> void {
     const auto path = std::format("assets/tiles/{}.png", id);
 
     tiles_[id.lod][idx].state = TileState::Loading;
-     loader_->Load(path, [this, id, idx](auto result) {
+     loader_->LoadAsync(path, [this, id, idx](auto result) {
         if (result) {
             tiles_[id.lod][idx].texture.SetImage(result.value());
             tiles_[id.lod][idx].state = TileState::Loaded;

@@ -19,20 +19,8 @@ Texture2D::Texture2D(std::shared_ptr<Image> image) {
 }
 
 auto Texture2D::SetImage(std::shared_ptr<Image> image) -> void {
-    if (is_loaded_) {
-        glDeleteTextures(1, &texture_id_);
-        texture_id_ = 0;
-        is_loaded_ = false;
-    }
-
-    InitTexture(
-        image->width,
-        image->height,
-        GL_RGBA,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        image->Data()
-    );
+    image_cache_ = std::move(image);
+    is_loaded_ = false;
 }
 
 auto Texture2D::InitTexture(
@@ -70,10 +58,23 @@ auto Texture2D::InitTexture(
     is_loaded_ = true;
 }
 
-auto Texture2D::Bind() const -> void {
-    if (!is_loaded_ || texture_id_ == 0) {
+auto Texture2D::Bind() -> void {
+    if (!is_loaded_ && image_cache_ == nullptr) {
         std::println("Attempting to bind a texture that is not loaded");
         return;
+    }
+
+    if (!is_loaded_ && image_cache_ != nullptr) {
+        glDeleteTextures(1, &texture_id_);
+        InitTexture(
+            image_cache_->width,
+            image_cache_->height,
+            GL_RGBA,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            image_cache_->Data()
+        );
+        image_cache_ = nullptr;
     }
 
     glActiveTexture(GL_TEXTURE0);
