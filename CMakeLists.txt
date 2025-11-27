@@ -62,11 +62,8 @@ add_executable(${EXECUTABLE}
     ${CORE_SOURCES}
     ${EXTERNAL_SOURCES}
     src/main.cpp
-    src/page.cpp
-    src/page.h
-    src/page_manager.cpp
     src/page_manager.h
-    src/types.h
+    src/page_table.h
 )
 
 target_include_directories(${EXECUTABLE} PRIVATE

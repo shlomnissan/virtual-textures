@@ -3,52 +3,74 @@
 
 #pragma once
 
+#include <algorithm>
+#include <format>
 #include <memory>
-#include <set>
+#include <random>
 #include <vector>
 
-#include <glm/vec2.hpp>
-
-#include "core/orthographic_camera.h"
+#include "core/texture2d.h"
 #include "loaders/image_loader.h"
-#include "page.h"
-#include "types.h"
 
-class PageManager {
-public:
-    PageManager(
-        const glm::vec2& texture_size,
-        const glm::vec2& page_size,
-        const int lods
-    );
+#include "page_table.h"
 
-    auto IngestPages(const std::vector<unsigned>& page_data) -> void;
+constexpr int image_h = 4096;
+constexpr int image_w = 4096;
+constexpr int page_h = 1024;
+constexpr int page_w = 1024;
+constexpr int pages_x = 4;
+constexpr int pages_y = 4;
 
-    auto GetVisiblePages() -> std::vector<Page*>;
+struct PageManager {
+    PageTable page_table {pages_x, pages_y};
+    Texture2D atlas {};
 
-    auto Debug() const -> void;
+    std::shared_ptr<ImageLoader> loader {ImageLoader::Create()};
 
-private:
-    std::set<PageId> visible_pages_cache_;
-    std::vector<int> pages_x_per_lod_;
-    std::vector<int> pages_y_per_lod_;
-    std::vector<std::vector<Page>> pages_;
+    PageManager() {
+        auto alloc_arr = std::vector<int>(pages_x * pages_y);
+        for (size_t i = 0u; i < alloc_arr.size(); ++i) {
+            alloc_arr[i] = static_cast<int>(i);
+        }
 
-    std::shared_ptr<ImageLoader> loader_;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::ranges::shuffle(alloc_arr, gen);
 
-    glm::vec2 texture_size_;
-    glm::vec2 page_size_;
+        atlas.InitTexture(
+            image_w, image_h,
+            GL_RGBA, GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            nullptr
+        );
 
-    unsigned lods_ {0};
-    unsigned curr_lod_ {0};
+        auto i = 0;
+        for (auto y = 0; y < pages_y; ++y) {
+            for (auto x = 0; x < pages_x; ++x) {
+                auto alloc_x = alloc_arr[i] % pages_x;
+                auto alloc_y = alloc_arr[i] / pages_x;
+                RequestPage(x, y, alloc_x, alloc_y);
+                ++i;
+            }
+        }
+    }
 
-    auto GeneratePages() -> void;
+    auto RequestPage(int page_x, int page_y, int alloc_x, int alloc_y) -> void {
+        auto path = std::format("assets/pages/{}_{}_{}.png", 1, page_x, page_y);
+        loader->Load(path, [this, page_x, page_y, alloc_x, alloc_y](auto result) {
+            if (!result) return;
 
-    auto GetPageId(unsigned packed_data) const -> PageId;
+            atlas.Update(
+                page_w * alloc_x,
+                page_h * alloc_y,
+                page_w,
+                page_h,
+                result.value()->Data()
+            );
 
-    auto GetPageIndex(const PageId& id) const -> int;
+            auto entry = uint32_t {(alloc_x & 0xFFu) | ((alloc_y & 0xFFu) << 8)};
+            page_table.Write(page_x, page_y, entry);
+        });
+    }
 
-    auto RequestPage(const PageId& id) -> void;
-
-    auto GetLowResPages() -> std::vector<Page>&;
 };

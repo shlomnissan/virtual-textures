@@ -28,6 +28,8 @@ public:
 
     auto Read(void* dst) const -> void;
 
+    auto Update(int offset_x, int offset_y, int width, int height, void* data) -> void;
+
     [[nodiscard]] auto Id() const { return texture_id_; }
 
     [[nodiscard]] auto Width() const { return width_; }

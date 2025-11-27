@@ -8,12 +8,11 @@
 #include <imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "types.h"
-
 #include "core/orthographic_camera.h"
 #include "core/perspective_camera.h"
 #include "core/shaders.h"
 #include "core/window.h"
+#include "core/texture2d.h"
 #include "geometries/plane_geometry.h"
 #include "resources/orbit_controls.h"
 #include "shaders/headers/feedback_vert.h"
@@ -28,6 +27,8 @@
 constexpr auto window_size = glm::vec2(1024.0f, 1024.0f);
 
 auto main() -> int {
+    std::shared_ptr<ImageLoader> loader_;
+
     auto window = Window {
         static_cast<int>(window_size.x),
         static_cast<int>(window_size.y),
@@ -70,6 +71,8 @@ auto main() -> int {
         {ShaderType::kFragmentShader, _SHADER_minimap_frag}
     }};
 
+    auto page_manager = PageManager {};
+
     const auto mainPass = [&]() {
         glViewport(0, 0, window.BufferWidth(), window.BufferHeight());
         glClearColor(0, 0, 0, 0);
@@ -83,6 +86,8 @@ auto main() -> int {
         auto minimap_model = glm::mat4 {1.0f};
         minimap_model = glm::translate(minimap_model, glm::vec3(120.0f, 120.0f, 0.0f));
         minimap_model = glm::scale(minimap_model, glm::vec3(200.0f, 200.0f, 1.0f));
+
+        page_manager.atlas.Bind();
 
         minimap_shader.Use();
         minimap_shader.SetUniform("u_Projection", camera_2d.projection);
