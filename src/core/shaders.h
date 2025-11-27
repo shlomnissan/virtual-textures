@@ -31,6 +31,7 @@ public:
     auto SetUniform(std::string_view uniform, int i) const -> void;
     auto SetUniform(std::string_view uniform, const float f) const -> void;
     auto SetUniform(std::string_view uniform, const glm::vec2& vec) const -> void;
+    auto SetUniform(std::string_view uniform, const glm::ivec2& vec) const -> void;
     auto SetUniform(std::string_view uniform, const glm::vec3& vec) const -> void;
     auto SetUniform(std::string_view uniform, const glm::mat3& matrix) const -> void;
     auto SetUniform(std::string_view uniform, const glm::mat4& matrix) const -> void;

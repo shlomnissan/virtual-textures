@@ -10,10 +10,12 @@
 #include <stb_image.h>
 
 auto ImageLoader::ValidFileExtensions() const -> std::vector<std::string> {
-    return {".png", ".jpg", ".jpeg"};
+    return {".png", ".jpg"};
 }
 
 auto ImageLoader::LoadImpl(const fs::path& path) const -> std::shared_ptr<void> {
+    stbi_set_flip_vertically_on_load(true);
+
     auto width = 0;
     auto height = 0;
     auto depth = 0;

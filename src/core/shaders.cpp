@@ -112,6 +112,10 @@ auto Shaders::SetUniform(std::string_view uniform, const glm::vec2& vec) const -
     glUniform2fv(GetUniform(uniform), 1, &vec[0]);
 }
 
+auto Shaders::SetUniform(std::string_view uniform, const glm::ivec2& vec) const -> void {
+    glUniform2iv(GetUniform(uniform), 1, &vec[0]);
+}
+
 auto Shaders::SetUniform(std::string_view uniform, const glm::vec3& vec) const -> void {
     glUniform3fv(GetUniform(uniform), 1, &vec[0]);
 }

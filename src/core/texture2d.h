@@ -24,11 +24,11 @@ public:
         const void* data
     ) -> void;
 
-    auto Bind() -> void;
+    auto Bind(int unit) -> void;
 
     auto Read(void* dst) const -> void;
 
-    auto Update(int offset_x, int offset_y, int width, int height, void* data) -> void;
+    auto Update(int offset_x, int offset_y, int width, int height, void* data) const -> void;
 
     [[nodiscard]] auto Id() const { return texture_id_; }
 

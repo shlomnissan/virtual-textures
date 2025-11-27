@@ -38,8 +38,8 @@ auto main() -> int {
     auto camera_2d = OrthographicCamera {
         /* left= */ 0.0f,
         /* right= */ window_size.x,
-        /* bottom= */ window_size.y,
-        /* top= */ 0.0f,
+        /* bottom= */ 0.0f,
+        /* top= */ window_size.y,
         /* near= */ -1.0f,
         /* far= */ 1.0f
     };
@@ -66,10 +66,17 @@ auto main() -> int {
         {ShaderType::kFragmentShader, _SHADER_page_frag}
     }};
 
+    page_shader.SetUniform("u_TextureAtlas", 0);
+    page_shader.SetUniform("u_PageTable", 1);
+    page_shader.SetUniform("u_NumPages", glm::ivec2 {4, 4});
+    page_shader.SetUniform("u_PageScale", glm::vec2 {0.25f, 0.25f});
+
     auto minimap_shader = Shaders {{
         {ShaderType::kVertexShader, _SHADER_minimap_vert},
         {ShaderType::kFragmentShader, _SHADER_minimap_frag}
     }};
+
+    minimap_shader.SetUniform("u_Texture0", 0);
 
     auto page_manager = PageManager {};
 
@@ -78,16 +85,17 @@ auto main() -> int {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        page_manager.atlas.Bind(0);
+        page_manager.page_table.texture.Bind(1);
+
         page_shader.Use();
         page_shader.SetUniform("u_Projection", camera_3d.projection);
         page_shader.SetUniform("u_ModelView", camera_3d.transform);
         geometry.Draw(page_shader);
 
         auto minimap_model = glm::mat4 {1.0f};
-        minimap_model = glm::translate(minimap_model, glm::vec3(120.0f, 120.0f, 0.0f));
+        minimap_model = glm::translate(minimap_model, glm::vec3(120.0f, 1024.0f - 120.0f, 0.0f));
         minimap_model = glm::scale(minimap_model, glm::vec3(200.0f, 200.0f, 1.0f));
-
-        page_manager.atlas.Bind();
 
         minimap_shader.Use();
         minimap_shader.SetUniform("u_Projection", camera_2d.projection);

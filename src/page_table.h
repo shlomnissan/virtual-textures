@@ -24,7 +24,6 @@ struct PageTable {
     }
 
     auto Write(int page_x, int page_y, uint32_t entry) {
-        texture.Bind();
         texture.Update(page_x, page_y, 1, 1, &entry);
     }
 };

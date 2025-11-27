@@ -59,8 +59,8 @@ auto Texture2D::InitTexture(
     is_loaded_ = true;
 }
 
-auto Texture2D::Update(int offset_x, int offset_y, int width, int height, void* data) -> void {
-    Bind();
+auto Texture2D::Update(int offset_x, int offset_y, int width, int height, void* data) const -> void {
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
     glTexSubImage2D(
         GL_TEXTURE_2D,
         0, offset_x, offset_y,
@@ -72,7 +72,7 @@ auto Texture2D::Update(int offset_x, int offset_y, int width, int height, void* 
     );
 }
 
-auto Texture2D::Bind() -> void {
+auto Texture2D::Bind(int unit) -> void {
     if (!is_loaded_ && image_cache_ == nullptr) {
         std::println("Attempting to bind a texture that is not loaded");
         return;
@@ -91,7 +91,7 @@ auto Texture2D::Bind() -> void {
         image_cache_ = nullptr;
     }
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
 }
 
