@@ -12,7 +12,12 @@
 struct PageTable {
     Texture2D texture;
 
-    PageTable(int width, int height) {
+    std::vector<uint32_t> page_table;
+
+    int width = 0;
+    int height = 0;
+
+    PageTable(int width, int height) : page_table(width * height), width(width), height(height) {
         texture.InitTexture(
             width,
             height,
@@ -24,6 +29,11 @@ struct PageTable {
     }
 
     auto Write(int page_x, int page_y, uint32_t entry) {
-        texture.Update(page_x, page_y, 1, 1, &entry);
+        const auto idx = static_cast<size_t>(page_y) * width + page_x;
+        page_table[idx] = entry;
+    }
+
+    auto Update() {
+        texture.Update(0, 0, width, height, page_table.data());
     }
 };

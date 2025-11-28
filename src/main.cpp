@@ -85,6 +85,8 @@ auto main() -> int {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        page_manager.page_table.Update();
+
         page_manager.atlas.Bind(0);
         page_manager.page_table.texture.Bind(1);
 
