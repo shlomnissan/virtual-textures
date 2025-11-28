@@ -28,6 +28,11 @@ struct PageTable {
         );
     }
 
+    auto IsResident(int page_x, int page_y) const {
+        const auto idx = static_cast<size_t>(page_y) * width + page_x;
+        return static_cast<bool>(page_table[idx] & 1);
+    }
+
     auto Write(int page_x, int page_y, uint32_t entry) {
         const auto idx = static_cast<size_t>(page_y) * width + page_x;
         page_table[idx] = entry;

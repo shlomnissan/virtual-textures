@@ -18,7 +18,14 @@ void main() {
     page.y = (u_NumPages.y - 1) - page.y;
 
     uint entry = texelFetch(u_PageTable, page, 0).r;
-    ivec2 physical_page = ivec2(entry & 0xFFu, (entry >> 8)  & 0xFFu);
+    uint resident = entry & 0x1u;
+
+    if (resident == 0u) {
+        FragColor = vec4(0.0);
+        return;
+    }
+
+    ivec2 physical_page = ivec2((entry >> 1) & 0xFFu, (entry >> 9) & 0xFFu);
 
     vec2 localUV = fract(v_TexCoord * vec2(u_NumPages));
     vec2 atlasUV = physical_page * u_PageScale + localUV * u_PageScale;

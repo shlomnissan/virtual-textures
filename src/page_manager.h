@@ -58,7 +58,9 @@ struct PageManager {
             for (auto x = 0; x < pages_x; ++x) {
                 auto alloc_x = alloc_arr[i] % pages_x;
                 auto alloc_y = alloc_arr[i] / pages_x;
-                RequestPage(x, y, alloc_x, alloc_y);
+                if (!page_table.IsResident(x, y)) {
+                    RequestPage(x, y, alloc_x, alloc_y);
+                }
                 ++i;
             }
         }
@@ -77,7 +79,7 @@ struct PageManager {
                 e.image->Data()
             );
 
-            auto entry = uint32_t {(e.alloc_x & 0xFFu) | ((e.alloc_y & 0xFFu) << 8)};
+            auto entry = uint32_t {0x1 | ((e.alloc_x & 0xFFu) << 1) | ((e.alloc_y & 0xFFu) << 9)};
             page_table.Write(e.page_x, e.page_y, entry);
         }
 
