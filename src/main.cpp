@@ -23,6 +23,7 @@
 #include "shaders/headers/minimap_frag.h"
 
 #include "page_manager.h"
+#include "feedback_buffer.h"
 
 constexpr auto window_size = glm::vec2(1024.0f, 1024.0f);
 
@@ -79,6 +80,15 @@ auto main() -> int {
     minimap_shader.SetUniform("u_Texture0", 0);
 
     auto page_manager = PageManager {};
+    auto feedback_buffer = FeedbackBuffer {256, 256};
+
+    const auto feedbackPass = [&]() {
+        feedback_buffer.Bind();
+
+        // TODO: implement feedback pass
+
+        feedback_buffer.Unbind();
+    };
 
     const auto mainPass = [&]() {
         glViewport(0, 0, window.BufferWidth(), window.BufferHeight());
@@ -106,6 +116,7 @@ auto main() -> int {
 
     window.Start([&]([[maybe_unused]] const double dt){
         controls.Update(static_cast<float>(dt));
+        feedbackPass();
         mainPass();
     });
 
