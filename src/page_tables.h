@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cassert>
+#include <cmath>
 #include <vector>
 
 #include <glad/glad.h>
@@ -33,7 +34,7 @@ struct PageTables {
         pages_x = texture_size.x / page_size.x;
         pages_y = texture_size.y / page_size.y;
 
-        lods = log2(std::max(pages_y, pages_x)) + 1;
+        lods = std::log2(std::max(pages_y, pages_x)) + 1;
         tables.resize(lods);
 
         for (auto i = 0, x = pages_x, y = pages_y; i < tables.size(); ++i) {
