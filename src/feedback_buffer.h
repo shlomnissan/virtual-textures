@@ -16,14 +16,16 @@ struct FeedbackBuffer {
     std::vector<GLuint> buffer;
 
     FeedbackBuffer(int width, int height) : framebuffer(width, height), buffer(width * height) {
-        texture.InitTexture(
-            framebuffer.Width(),
-            framebuffer.Height(),
-            GL_R32UI,
-            GL_RED_INTEGER,
-            GL_UNSIGNED_INT,
-            nullptr
-        );
+        texture.InitTexture({
+            .width = framebuffer.Width(),
+            .height = framebuffer.Height(),
+            .internal_format = GL_R32UI,
+            .format = GL_RED_INTEGER,
+            .type = GL_UNSIGNED_INT,
+            .min_filter = GL_NEAREST,
+            .gen_mipmaps = false,
+            .data = nullptr
+        });
 
         framebuffer.AddColorAttachment(texture.Id());
     }

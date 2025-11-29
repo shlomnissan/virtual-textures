@@ -9,20 +9,20 @@
 
 class Texture2D {
 public:
+    struct Parameters {
+        int width;
+        int height;
+        unsigned int internal_format;
+        unsigned int format;
+        unsigned int type;
+        unsigned int min_filter;
+        bool gen_mipmaps;
+        void* data;
+    };
+
     Texture2D() = default;
 
-    explicit Texture2D(std::shared_ptr<Image> image);
-
-    auto SetImage(std::shared_ptr<Image> image) -> void;
-
-    auto InitTexture(
-        int width,
-        int height,
-        unsigned internal_format,
-        unsigned format,
-        unsigned type,
-        const void* data
-    ) -> void;
+    auto InitTexture(const Parameters& params) -> void;
 
     auto Bind(int unit) -> void;
 
@@ -32,21 +32,18 @@ public:
 
     [[nodiscard]] auto Id() const { return texture_id_; }
 
-    [[nodiscard]] auto Width() const { return width_; }
+    [[nodiscard]] auto Width() const { return params_.width; }
 
-    [[nodiscard]] auto Height() const { return height_; }
+    [[nodiscard]] auto Height() const { return params_.height; }
 
     ~Texture2D();
 
 private:
     std::shared_ptr<Image> image_cache_ {nullptr};
 
-    unsigned int texture_id_;
-    unsigned int format_;
-    unsigned int type_;
+    Parameters params_;
 
-    int width_ {0};
-    int height_ {0};
+    unsigned int texture_id_;
 
 
     bool is_loaded_ {false};

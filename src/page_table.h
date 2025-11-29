@@ -18,14 +18,16 @@ struct PageTable {
     int height = 0;
 
     PageTable(int width, int height) : page_table(width * height), width(width), height(height) {
-        texture.InitTexture(
-            width,
-            height,
-            GL_R32UI,
-            GL_RED_INTEGER,
-            GL_UNSIGNED_INT,
-            nullptr
-        );
+        texture.InitTexture({
+            .width = width,
+            .height = height,
+            .internal_format = GL_R32UI,
+            .format = GL_RED_INTEGER,
+            .type = GL_UNSIGNED_INT,
+            .min_filter = GL_NEAREST,
+            .gen_mipmaps = false,
+            .data = nullptr
+        });
     }
 
     auto IsResident(int page_x, int page_y) const {

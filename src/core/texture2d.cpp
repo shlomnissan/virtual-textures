@@ -7,51 +7,29 @@
 
 #include <print>
 
-Texture2D::Texture2D(std::shared_ptr<Image> image) {
-    InitTexture(
-        image->width,
-        image->height,
-        GL_RGBA,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        image->Data()
-    );
-}
-
-auto Texture2D::SetImage(std::shared_ptr<Image> image) -> void {
-    image_cache_ = std::move(image);
-    is_loaded_ = false;
-}
-
-auto Texture2D::InitTexture(
-    int width,
-    int height,
-    unsigned internal_format,
-    unsigned format,
-    unsigned type,
-    const void* data
-) -> void {
+auto Texture2D::InitTexture(const Parameters& params) -> void {
     glGenTextures(1, &texture_id_);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
 
-    width_ = width;
-    height_ = height;
-    format_ = format;
-    type_ = type;
+    params_ = params;
 
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        internal_format,
-        width,
-        height,
+        params.internal_format,
+        params.width,
+        params.height,
         0,
-        format,
-        type,
-        data
+        params.format,
+        params.type,
+        params.data
     );
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    if (params.gen_mipmaps) {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.min_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -66,38 +44,20 @@ auto Texture2D::Update(int offset_x, int offset_y, int width, int height, void* 
         0, offset_x, offset_y,
         width,
         height,
-        format_,
-        type_,
+        params_.format,
+        params_.type,
         data
     );
 }
 
 auto Texture2D::Bind(int unit) -> void {
-    if (!is_loaded_ && image_cache_ == nullptr) {
-        std::println("Attempting to bind a texture that is not loaded");
-        return;
-    }
-
-    if (!is_loaded_ && image_cache_ != nullptr) {
-        glDeleteTextures(1, &texture_id_);
-        InitTexture(
-            image_cache_->width,
-            image_cache_->height,
-            GL_RGBA,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            image_cache_->Data()
-        );
-        image_cache_ = nullptr;
-    }
-
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
 }
 
 auto Texture2D::Read(void* dst) const -> void {
     glBindTexture(GL_TEXTURE_2D, texture_id_);
-    glGetTexImage(GL_TEXTURE_2D, 0, format_, type_, dst);
+    glGetTexImage(GL_TEXTURE_2D, 0, params_.format, params_.type, dst);
 }
 
 Texture2D::~Texture2D() {

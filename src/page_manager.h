@@ -31,8 +31,7 @@ struct PageRequest {
 
 struct PendingUpload {
     PageRequest request;
-    int loc_x;
-    int loc_y;
+    PageAlloc page_alloc;
     std::shared_ptr<Image> image;
 };
 
@@ -54,13 +53,16 @@ struct PageManager {
     size_t alloc_idx = 0;
 
     PageManager() {
-        atlas.InitTexture(
-            atlas_size.x,
-            atlas_size.y,
-            GL_RGBA, GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            nullptr
-        );
+        atlas.InitTexture({
+            .width = static_cast<int>(atlas_size.x),
+            .height = static_cast<int>(atlas_size.y),
+            .internal_format = GL_RGBA,
+            .format = GL_RGBA,
+            .type = GL_UNSIGNED_BYTE,
+            .min_filter = GL_LINEAR,
+            .gen_mipmaps = true,
+            .data = nullptr
+        });
     }
 
     auto IngestFeedback(const std::vector<uint32_t>& feedback) {
@@ -94,14 +96,17 @@ struct PageManager {
             upload_queue.pop_back();
 
             atlas.Update(
-                page_size.x * e.loc_x,
-                page_size.y * e.loc_y,
+                page_size.x * e.page_alloc.x,
+                page_size.y * e.page_alloc.y,
                 page_size.x,
                 page_size.y,
                 e.image->Data()
             );
 
-            auto entry = uint32_t {0x1 | ((e.loc_x & 0xFFu) << 1) | ((e.loc_y & 0xFFu) << 9)};
+            auto entry = uint32_t {
+                0x1 | ((e.page_alloc.x & 0xFFu) << 1) | ((e.page_alloc.y & 0xFFu) << 9)
+            };
+
             page_table.Write(e.request.x, e.request.y, entry);
             processing.erase(e.request);
         }
@@ -121,8 +126,7 @@ struct PageManager {
                 auto lock = std::lock_guard(upload_mutex);
                 upload_queue.emplace_back(
                     request,
-                    alloc.value().x,
-                    alloc.value().y,
+                    alloc.value(),
                     std::move(result.value())
                 );
             } else {
