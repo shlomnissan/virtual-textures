@@ -38,7 +38,7 @@ struct PendingUpload {
 struct PageManager {
     PageAllocator page_allocator {pages};
 
-    PageTables page_table {glm::ivec2 {8192, 8192}, page_size};
+    PageTables page_table;
 
     Texture2D atlas {};
 
@@ -52,7 +52,7 @@ struct PageManager {
 
     size_t alloc_idx = 0;
 
-    PageManager() {
+    PageManager(const glm::ivec2& virtual_size) : page_table(virtual_size, page_size) {
         atlas.InitTexture({
             .width = static_cast<int>(atlas_size.x),
             .height = static_cast<int>(atlas_size.y),

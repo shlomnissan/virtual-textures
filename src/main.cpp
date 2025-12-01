@@ -26,7 +26,7 @@
 #include "feedback_buffer.h"
 
 constexpr auto window_size = glm::vec2(1024.0f, 1024.0f);
-constexpr auto texture_size = glm::vec2(8192.0f, 8192.0f);
+constexpr auto virtual_size = glm::vec2(8192.0f, 8192.0f);
 constexpr auto buffer_size = glm::ivec2(256, 256);
 
 auto main() -> int {
@@ -71,19 +71,20 @@ auto main() -> int {
 
     page_shader.SetUniform("u_TextureAtlas", 0);
     page_shader.SetUniform("u_PageTable", 1);
-    page_shader.SetUniform("u_NumPages", glm::ivec2 {4, 4});
-    page_shader.SetUniform("u_PageScale", glm::vec2 {0.25f, 0.25f});
+    page_shader.SetUniform("u_VirtualSize", virtual_size);
+    page_shader.SetUniform("u_PageScale", page_size / atlas_size);
+    page_shader.SetUniform("u_PageSize", page_size);
+    page_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {1.0f, 1.0f});
 
     auto feedback_shader = Shaders {{
         {ShaderType::kVertexShader, _SHADER_feedback_vert},
         {ShaderType::kFragmentShader, _SHADER_feedback_frag}
     }};
 
-    feedback_shader.SetUniform("u_TextureSize", texture_size);
+    feedback_shader.SetUniform("u_VirtualSize", virtual_size);
     feedback_shader.SetUniform("u_PageSize", page_size);
     feedback_shader.SetUniform("u_BufferScreenRatio", 0.25f);
-    feedback_shader.SetUniform("u_MinMipLevel", 1.0f);
-    feedback_shader.SetUniform("u_MaxMipLevel", 1.0f);
+    feedback_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {1.0f, 1.0f});
 
     auto minimap_shader = Shaders {{
         {ShaderType::kVertexShader, _SHADER_minimap_vert},
@@ -92,7 +93,7 @@ auto main() -> int {
 
     minimap_shader.SetUniform("u_Texture0", 0);
 
-    auto page_manager = PageManager {};
+    auto page_manager = PageManager {virtual_size};
     auto feedback_buffer = FeedbackBuffer {buffer_size.x, buffer_size.y};
 
     const auto feedbackPass = [&]() {
