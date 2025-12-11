@@ -31,8 +31,6 @@ auto Geometry::SetVertexData(
 
     // clean-up
     glBindVertexArray(0);
-    glDeleteBuffers(1, &vbo_);
-    glDeleteBuffers(1, &ebo_);
 }
 
 auto Geometry::Draw(const Shaders& shader) const -> void {

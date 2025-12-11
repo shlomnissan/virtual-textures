@@ -69,6 +69,7 @@ auto main() -> int {
         {ShaderType::kFragmentShader, _SHADER_page_frag}
     }};
 
+    page_shader.Use();
     page_shader.SetUniform("u_TextureAtlas", 0);
     page_shader.SetUniform("u_PageTable", 1);
     page_shader.SetUniform("u_VirtualSize", virtual_size);
@@ -81,6 +82,7 @@ auto main() -> int {
         {ShaderType::kFragmentShader, _SHADER_feedback_frag}
     }};
 
+    feedback_shader.Use();
     feedback_shader.SetUniform("u_VirtualSize", virtual_size);
     feedback_shader.SetUniform("u_PageGrid", virtual_size / page_size);
     feedback_shader.SetUniform("u_BufferScreenRatio", 0.25f);
