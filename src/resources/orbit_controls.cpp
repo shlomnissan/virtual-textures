@@ -3,7 +3,6 @@
 
 #include "orbit_controls.h"
 
-#include <glm/vec3.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
 #include <algorithm>
@@ -12,10 +11,12 @@
 
 namespace {
 
+constexpr glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
 constexpr float pi_over_2 {static_cast<float>(std::numbers::pi / 2)};
 constexpr float pi_times_2 {static_cast<float>(std::numbers::pi * 2)};
-constexpr float orbit_speed {3.5f};
-constexpr float zoom_speed {5.0f};
+constexpr float orbit_speed {0.01f};
+constexpr float pan_speed {0.001f};
+constexpr float zoom_speed {0.1f};
 constexpr float pitch_limit = pi_over_2 - 0.001f;
 
 auto SphericalToVec3(float radius, float phi, float theta) -> glm::vec3;
@@ -29,29 +30,40 @@ OrbitControls::OrbitControls(PerspectiveCamera* camera) : camera_(camera) {
         auto e = event->As<MouseEvent>();
         if (!e) return;
 
-        if (e->type == Moved) {
-            curr_pos_ = e->position;
-            if (is_first_move_) {
-                is_first_move_ = false;
-                prev_pos_ = curr_pos_;
-                return;
-            }
+        if (e->type == ButtonPressed && curr_button == MouseButton::None) {
+            curr_button = e->button;
+            prev_pos_ = e->position;
         }
 
-        if (e->type == ButtonPressed || e->type == ButtonReleased) {
-            if (e->button == MouseButton::Left) {
-                if (e->type == ButtonPressed) {
-                    do_orbit_ = true;
-                    is_first_move_ = true;
-                } else {
-                    do_orbit_ = false;
-                }
+        if (e->type == ButtonReleased && curr_button == e->button) {
+            curr_button = MouseButton::None;
+        }
+
+        if (e->type == Moved) {
+            curr_pos_ = e->position;
+            auto offset = curr_pos_ - prev_pos_;
+
+            if (curr_button == MouseButton::Left) {
+                phi -= offset.x * orbit_speed;
+                theta += offset.y * orbit_speed;
+            }
+
+            if (curr_button == MouseButton::Right) {
+                const auto speed = pan_speed * radius;
+                const glm::vec3 eye = target + SphericalToVec3(radius, phi, theta);
+                const glm::vec3 forward = glm::normalize(target - eye);
+                const glm::vec3 right = glm::normalize(glm::cross(forward, world_up));
+                const glm::vec3 up = glm::normalize(glm::cross(right, forward));
+
+                target -= (right * offset.x - up * offset.y) * speed;
             }
         }
 
         if (e->type == Scrolled) {
-            scroll_offset_ = e->scroll.y;
+            radius -= zoom_speed * e->scroll.y;
         }
+
+        prev_pos_ = curr_pos_;
     });
 
     EventDispatcher::Get().AddEventListener("mouse_event", mouse_event_listener_);
@@ -60,29 +72,12 @@ OrbitControls::OrbitControls(PerspectiveCamera* camera) : camera_(camera) {
 auto OrbitControls::Update(float dt) -> void {
     if (camera_ == nullptr) return;
 
-    auto offset = curr_pos_ - prev_pos_;
-
-    if (do_orbit_) {
-        phi -= offset.x * orbit_speed * dt;
-        if (phi > pi_times_2 || phi < -pi_times_2) {
-            phi = std::fmod(phi, pi_times_2);
-        }
-
-        theta += offset.y * orbit_speed * dt;
-        theta = std::clamp(theta, -pitch_limit, pitch_limit);
-    }
-
-    if (scroll_offset_ != 0.0f) {
-        radius -= scroll_offset_ * zoom_speed * dt;
-        radius = std::max(0.1f, radius);
-        scroll_offset_ = 0.0f;
-    }
-
-    prev_pos_ = curr_pos_;
+    theta = std::clamp(theta, -pitch_limit, pitch_limit);
+    radius = std::max(0.1f, radius);
 
     camera_->transform = glm::lookAt(
-        SphericalToVec3(radius, phi, theta),
-        glm::vec3 {0.0f},
+        target + SphericalToVec3(radius, phi, theta),
+        target,
         glm::vec3 {0.0f, 1.0f, 0.0f}
     );
 }
