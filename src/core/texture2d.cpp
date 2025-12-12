@@ -25,8 +25,18 @@ auto Texture2D::InitTexture(const Parameters& params) -> void {
         params.data
     );
 
-    if (params.gen_mipmaps) {
-        glGenerateMipmap(GL_TEXTURE_2D);
+     for (int level = 1; level < params.levels; ++level) {
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            level,
+            GL_R32UI,
+            params.width >> level,
+            params.height >> level,
+            0,
+            GL_RED_INTEGER,
+            GL_UNSIGNED_INT,
+            nullptr
+        );
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, params.min_filter);

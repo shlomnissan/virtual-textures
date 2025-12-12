@@ -19,11 +19,11 @@ struct FeedbackBuffer {
         texture.InitTexture({
             .width = framebuffer.Width(),
             .height = framebuffer.Height(),
+            .levels = 0,
             .internal_format = GL_R32UI,
             .format = GL_RED_INTEGER,
             .type = GL_UNSIGNED_INT,
             .min_filter = GL_NEAREST,
-            .gen_mipmaps = false,
             .data = nullptr
         });
 

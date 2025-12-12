@@ -50,28 +50,13 @@ struct PageTables {
         texture.InitTexture({
             .width = pages_x,
             .height = pages_y,
+            .levels = lods,
             .internal_format = GL_R32UI,
             .format = GL_RED_INTEGER,
             .type = GL_UNSIGNED_INT,
             .min_filter = GL_NEAREST,
-            .gen_mipmaps = false,
             .data = nullptr
         });
-
-        texture.Bind(0);
-        for (int level = 1; level < lods; ++level) {
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                level,
-                GL_R32UI,
-                pages_x >> level,
-                pages_y >> level,
-                0,
-                GL_RED_INTEGER,
-                GL_UNSIGNED_INT,
-                nullptr
-            );
-        }
     }
 
     auto IsResident(int lod, int page_x, int page_y) const {

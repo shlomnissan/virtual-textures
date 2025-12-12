@@ -12,11 +12,11 @@ public:
     struct Parameters {
         int width;
         int height;
+        int levels;
         unsigned int internal_format;
         unsigned int format;
         unsigned int type;
         unsigned int min_filter;
-        bool gen_mipmaps;
         void* data;
     };
 

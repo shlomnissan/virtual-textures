@@ -56,11 +56,11 @@ struct PageManager {
         atlas.InitTexture({
             .width = static_cast<int>(atlas_size.x),
             .height = static_cast<int>(atlas_size.y),
+            .levels = 0,
             .internal_format = GL_RGBA,
             .format = GL_RGBA,
             .type = GL_UNSIGNED_BYTE,
             .min_filter = GL_LINEAR,
-            .gen_mipmaps = true,
             .data = nullptr
         });
     }
