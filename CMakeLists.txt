@@ -63,9 +63,10 @@ add_executable(${EXECUTABLE}
     ${EXTERNAL_SOURCES}
     src/main.cpp
     src/feedback_buffer.h
-    src/page_allocator.h
+    src/page_cache.h
     src/page_manager.h
     src/page_tables.h
+    src/types.h
 )
 
 target_include_directories(${EXECUTABLE} PRIVATE

@@ -15,28 +15,21 @@
 #include "loaders/image_loader.h"
 
 #include "page_tables.h"
-#include "page_allocator.h"
+#include "page_cache.h"
+#include "types.h"
 
 constexpr auto atlas_size = glm::vec2(4096.0f, 4096.0f);
 constexpr auto page_size = glm::vec2(1024.0f, 1024.0f);
 constexpr auto pages = glm::ivec2(atlas_size / page_size);
 
-struct PageRequest {
-    uint32_t lod;
-    int x;
-    int y;
-
-    auto operator<=>(const PageRequest&) const = default;
-};
-
 struct PendingUpload {
     PageRequest request;
-    PageAlloc page_alloc;
+    PageSlot page_alloc;
     std::shared_ptr<Image> image;
 };
 
 struct PageManager {
-    PageAllocator page_allocator {pages};
+    PageCache page_cache {pages.x, pages.y};
 
     PageTables page_table;
 
@@ -113,24 +106,25 @@ struct PageManager {
     }
 
     auto RequestPage(const PageRequest& request) -> void {
-        auto alloc = page_allocator.Alloc();
-        if (!alloc) {
-            std::println(std::cerr, "{}", alloc.error());
+        auto alloc_result = page_cache.Alloc(request);
+        if (!alloc_result.slot) {
+            std::println(std::cerr, "Out of memory");
             return;
         }
 
+        auto slot = alloc_result.slot.value();
         auto path = std::format("assets/pages/{}_{}_{}.png", request.lod, request.x, request.y);
 
-        loader->LoadAsync(path, [this, request, alloc](auto result) {
-            if (result) {
+        loader->LoadAsync(path, [this, request, slot](auto loader_result) {
+            if (loader_result) {
                 auto lock = std::lock_guard(upload_mutex);
                 upload_queue.emplace_back(
                     request,
-                    alloc.value(),
-                    std::move(result.value())
+                    slot,
+                    std::move(loader_result.value())
                 );
             } else {
-                std::println("{}", result.error());
+                std::println("{}", loader_result.error());
             }
 
         });
