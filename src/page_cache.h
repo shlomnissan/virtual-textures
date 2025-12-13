@@ -27,7 +27,12 @@ public:
     }
 
     auto Commit(const PageRequest& request, const PageSlot& slot) {
-        req_to_slot[request] = slot;
+        if (req_to_slot_.contains(request)) {
+            // add assert, this shouldn't happen
+            return;
+        }
+
+        req_to_slot_[request] = slot;
         lru_list_.emplace_front(request);
         lru_map_[request] = lru_list_.begin();
     }
@@ -39,7 +44,24 @@ public:
     }
 
     auto Acquire(const PageRequest& request) -> ResidencyDecision {
+        // if already resident (req_to_slot)
+            // return the slot
+
+        // add assert no way for lru and free slots to be empty
+
         if (free_slots_.empty()) {
+            // get request from back of lru_list_
+            // get slot from req_to_slot
+            // if we have both
+                // pop back lru_list_
+                // erase value from lru_map_
+                // erase value from req_to_slot
+            // return residency decision
+                // slot: slot
+                // evicted: request
+            // note: the page manager is responsible for updating the page
+            //   table when it flushes the upload queue. if evicted exists
+            //   the page manager can clear the table from RequestPage
             return ResidencyDecision {std::nullopt, std::nullopt};
         }
 
@@ -59,5 +81,5 @@ private:
     std::vector<PageSlot> free_slots_ {};
     std::list<PageRequest> lru_list_ {};
     std::unordered_map<PageRequest, std::list<PageRequest>::iterator> lru_map_ {};
-    std::unordered_map<PageRequest, PageSlot> req_to_slot {};
+    std::unordered_map<PageRequest, PageSlot> req_to_slot_ {};
 };
