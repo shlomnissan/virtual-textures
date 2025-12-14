@@ -11,8 +11,8 @@
 
 #include <glm/vec2.hpp>
 
+#include "core/image_loader.h"
 #include "core/texture2d.h"
-#include "loaders/image_loader.h"
 
 #include "page_tables.h"
 #include "page_cache.h"

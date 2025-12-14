@@ -9,7 +9,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "core/timer.h"
+#include "timer.h"
 
 class Window {
 public:

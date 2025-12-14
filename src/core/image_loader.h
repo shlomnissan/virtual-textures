@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "core/image.h"
-#include "loaders/loader.h"
-
 #include <filesystem>
 #include <memory>
 #include <vector>
+
+#include "image.h"
+#include "loader.h"
 
 namespace fs = std::filesystem;
 

@@ -8,13 +8,14 @@
 #include <imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "core/orbit_controls.h"
 #include "core/orthographic_camera.h"
 #include "core/perspective_camera.h"
+#include "core/plane_geometry.h"
 #include "core/shaders.h"
-#include "core/window.h"
 #include "core/texture2d.h"
-#include "geometries/plane_geometry.h"
-#include "resources/orbit_controls.h"
+#include "core/window.h"
+
 #include "shaders/headers/feedback_vert.h"
 #include "shaders/headers/feedback_frag.h"
 #include "shaders/headers/page_vert.h"

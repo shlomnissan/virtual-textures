@@ -1,10 +1,10 @@
 // Copyright © 2025 - Present, Shlomi Nissan.
 // All rights reserved.
 
-#include "core/framebuffer.h"
-
 #include <array>
 #include <vector>
+
+#include "core/framebuffer.h"
 
 constexpr std::array<GLuint, 4> clear {0xFFFFFFFFu, 0, 0, 0};
 

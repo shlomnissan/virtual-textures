@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "core/shaders.h"
+#include "shaders.h"
 
 class Geometry {
 public:

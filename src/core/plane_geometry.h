@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/geometry.h"
+#include "geometry.h"
 
 class PlaneGeometry : public Geometry {
 public:

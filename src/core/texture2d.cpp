@@ -5,8 +5,6 @@
 
 #include <glad/glad.h>
 
-#include <print>
-
 auto Texture2D::InitTexture(const Parameters& params) -> void {
     glGenTextures(1, &texture_id_);
     glBindTexture(GL_TEXTURE_2D, texture_id_);

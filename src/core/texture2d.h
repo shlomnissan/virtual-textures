@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "core/image.h"
-
 #include <memory>
+
+#include "image.h"
 
 class Texture2D {
 public:

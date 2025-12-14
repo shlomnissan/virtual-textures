@@ -11,6 +11,7 @@
 #include <glm/vec2.hpp>
 
 #include "core/texture2d.h"
+
 #include "types.h"
 
 struct PageTables {

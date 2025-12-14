@@ -23,17 +23,24 @@ find_package(glm REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
 set(CORE_SOURCES
-    src/core/events.h
     src/core/event_dispatcher.h
-    src/core/geometry.cpp
-    src/core/geometry.h
+    src/core/events.h
     src/core/framebuffer.cpp
     src/core/framebuffer.h
+    src/core/geometry.cpp
+    src/core/geometry.h
     src/core/image.h
+    src/core/image_loader.cpp
+    src/core/image_loader.h
+    src/core/loader.h
+    src/core/orbit_controls.cpp
+    src/core/orbit_controls.h
     src/core/orthographic_camera.cpp
     src/core/orthographic_camera.h
     src/core/perspective_camera.cpp
     src/core/perspective_camera.h
+    src/core/plane_geometry.cpp
+    src/core/plane_geometry.h
     src/core/shaders.cpp
     src/core/shaders.h
     src/core/texture2d.cpp
@@ -41,15 +48,6 @@ set(CORE_SOURCES
     src/core/timer.h
     src/core/window.cpp
     src/core/window.h
-    src/geometries/plane_geometry.cpp
-    src/geometries/plane_geometry.h
-    src/loaders/image_loader.cpp
-    src/loaders/image_loader.h
-    src/loaders/loader.h
-    src/resources/orbit_controls.cpp
-    src/resources/orbit_controls.h
-    src/resources/zoom_pan_camera.cpp
-    src/resources/zoom_pan_camera.h
 )
 
 set(EXTERNAL_SOURCES

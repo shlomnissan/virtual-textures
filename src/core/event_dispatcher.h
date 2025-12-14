@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "events.h"
-
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "events.h"
 
 using EventListener = std::function<void(Event*)>;
 

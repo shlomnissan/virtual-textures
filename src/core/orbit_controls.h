@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "core/perspective_camera.h"
-#include "core/event_dispatcher.h"
-#include "core/events.h"
-
 #include <memory>
 
 #include <glm/vec3.hpp>
+
+#include "event_dispatcher.h"
+#include "events.h"
+#include "perspective_camera.h"
 
 class OrbitControls {
 public:
