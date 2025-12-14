@@ -28,6 +28,7 @@
 constexpr auto window_size = glm::vec2(1024.0f, 1024.0f);
 constexpr auto virtual_size = glm::vec2(8192.0f, 8192.0f);
 constexpr auto buffer_size = glm::ivec2(256, 256);
+constexpr auto lods = 4u;
 
 auto main() -> int {
     std::shared_ptr<ImageLoader> loader_;
@@ -75,7 +76,7 @@ auto main() -> int {
     page_shader.SetUniform("u_VirtualSize", virtual_size);
     page_shader.SetUniform("u_PageGrid", virtual_size / page_size);
     page_shader.SetUniform("u_PageScale", page_size / atlas_size);
-    page_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {0.0f, 3.0f});
+    page_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {0.0f, static_cast<float>(lods - 1)});
 
     auto feedback_shader = Shaders {{
         {ShaderType::kVertexShader, _SHADER_feedback_vert},
@@ -86,7 +87,7 @@ auto main() -> int {
     feedback_shader.SetUniform("u_VirtualSize", virtual_size);
     feedback_shader.SetUniform("u_PageGrid", virtual_size / page_size);
     feedback_shader.SetUniform("u_BufferScreenRatio", 0.25f);
-    feedback_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {0.0f, 3.0f});
+    feedback_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {0.0f, static_cast<float>(lods - 1)});
 
     auto minimap_shader = Shaders {{
         {ShaderType::kVertexShader, _SHADER_minimap_vert},
@@ -95,7 +96,7 @@ auto main() -> int {
 
     minimap_shader.SetUniform("u_Texture0", 0);
 
-    auto page_manager = PageManager {virtual_size};
+    auto page_manager = PageManager {virtual_size, lods};
     auto feedback_buffer = FeedbackBuffer {buffer_size.x, buffer_size.y};
 
     const auto feedbackPass = [&]() {

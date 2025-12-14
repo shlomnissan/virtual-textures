@@ -18,7 +18,9 @@ struct ResidencyDecision {
 
 class PageCache {
 public:
-    PageCache(int pages_x, int pages_y) : capacity_(pages_x * pages_y) {
+    PageCache(int pages_x, int pages_y, unsigned int min_pinned_lod_idx)
+      : capacity_(pages_x * pages_y), min_pinned_lod_idx_(min_pinned_lod_idx)
+    {
         free_slots_.reserve(capacity_);
         for (auto y = 0; y < pages_y; ++y) {
             for (auto x = 0; x < pages_x; ++x) {
@@ -40,6 +42,7 @@ public:
     }
 
     auto Touch(const PageRequest& request) {
+        if (request.lod >= min_pinned_lod_idx_) return; // no-op for pinned lods
         if (auto it = lru_map_.find(request); it != lru_map_.end()) {
             lru_list_.splice(lru_list_.begin(), lru_list_, it->second);
         }
@@ -53,12 +56,25 @@ public:
         assert(free_slots_.size() > 0 || lru_list_.size() > 0);
 
         if (free_slots_.empty()) {
-            auto request = lru_list_.back();
+            auto it = lru_list_.rbegin();
+
+            while (it != lru_list_.rend()) {
+                if (it->lod < min_pinned_lod_idx_) {
+                    break;
+                }
+                ++it;
+            }
+
+            if (it == lru_list_.rend()) {
+                return ResidencyDecision {std::nullopt, std::nullopt};
+            }
+
+            auto request = *it;
 
             assert(req_to_slot_.contains(request));
-            auto slot = req_to_slot_[request];
+            auto slot = req_to_slot_.at(request);
 
-            lru_list_.pop_back();
+            lru_list_.erase(lru_map_.at(request));
             lru_map_.erase(request);
             req_to_slot_.erase(request);
 
@@ -76,7 +92,8 @@ public:
     }
 
 private:
-    size_t capacity_ {0};
+    size_t capacity_;
+    unsigned int min_pinned_lod_idx_;
 
     std::vector<PageSlot> free_slots_ {};
     std::list<PageRequest> lru_list_ {};

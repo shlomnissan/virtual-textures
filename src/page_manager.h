@@ -21,6 +21,7 @@
 constexpr auto atlas_size = glm::vec2(4096.0f, 4096.0f);
 constexpr auto page_size = glm::vec2(1024.0f, 1024.0f);
 constexpr auto pages = glm::ivec2(atlas_size / page_size);
+constexpr auto min_pinned_lod_idx = 2u;
 
 struct PendingUpload {
     PageRequest request;
@@ -34,7 +35,7 @@ struct PendingFailure {
 };
 
 struct PageManager {
-    PageCache page_cache {pages.x, pages.y};
+    PageCache page_cache {pages.x, pages.y, min_pinned_lod_idx};
 
     PageTables page_table;
 
@@ -51,7 +52,7 @@ struct PageManager {
 
     size_t alloc_idx = 0;
 
-    PageManager(const glm::ivec2& virtual_size) : page_table(virtual_size, page_size) {
+    PageManager(const glm::ivec2& virtual_size, unsigned int lods) : page_table(virtual_size, page_size) {
         atlas.InitTexture({
             .width = static_cast<int>(atlas_size.x),
             .height = static_cast<int>(atlas_size.y),
@@ -62,6 +63,17 @@ struct PageManager {
             .min_filter = GL_LINEAR,
             .data = nullptr
         });
+
+        // preload pinned pages
+        for (auto lod = min_pinned_lod_idx; lod < lods; ++lod) {
+            auto rows = std::max(static_cast<int>(virtual_size.y / page_size.y) >> lod, 1);
+            auto cols = std::max(static_cast<int>(virtual_size.x / page_size.x) >> lod, 1);
+            for (auto row = 0; row < rows; row++) {
+                for (auto col = 0; col < cols; col++) {
+                    RequestPage(PageRequest {.lod = lod, .x = col, .y = row});
+                }
+            }
+        }
     }
 
     auto IngestFeedback(const std::vector<uint32_t>& feedback) {
@@ -84,7 +96,6 @@ struct PageManager {
                 !page_table.IsResident(request.lod, request.x, request.y) &&
                 processing.find(request) == processing.end()
             ) {
-                processing.emplace(request);
                 RequestPage(request);
             }
         }
@@ -138,6 +149,7 @@ struct PageManager {
 
         auto slot = alloc_result.slot.value();
         auto path = std::format("assets/pages/{}_{}_{}.png", request.lod, request.x, request.y);
+        processing.emplace(request);
 
         loader->LoadAsync(path, [this, request, slot](auto loader_result) {
             auto lock = std::lock_guard(upload_mutex);

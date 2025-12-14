@@ -73,7 +73,7 @@ auto OrbitControls::Update(float dt) -> void {
     if (camera_ == nullptr) return;
 
     theta = std::clamp(theta, -pitch_limit, pitch_limit);
-    radius = std::max(0.1f, radius);
+    radius = std::max(0.11f, radius);
 
     camera_->transform = glm::lookAt(
         target + SphericalToVec3(radius, phi, theta),
