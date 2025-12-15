@@ -72,7 +72,6 @@ Window::Window(int width, int height, std::string_view title) {
     imguiInitialize(window_);
 
     glfwGetFramebufferSize(window_, &buffer_width_, &buffer_height_);
-    glfwSwapInterval(0);
 
     glViewport(0, 0, buffer_width_, buffer_height_);
 }

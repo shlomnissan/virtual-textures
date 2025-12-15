@@ -50,10 +50,8 @@ public:
 
     auto Acquire(const PageRequest& request) -> ResidencyDecision {
         if (auto it = req_to_slot_.find(request); it != req_to_slot_.end()) {
-            return ResidencyDecision {it->second, std::nullopt};
+            return {.slot = it->second, .evicted = std::nullopt};
         }
-
-        assert(free_slots_.size() > 0 || lru_list_.size() > 0);
 
         if (free_slots_.empty()) {
             auto it = lru_list_.rbegin();
@@ -66,7 +64,7 @@ public:
             }
 
             if (it == lru_list_.rend()) {
-                return ResidencyDecision {std::nullopt, std::nullopt};
+                return {.slot = std::nullopt, .evicted = std::nullopt};
             }
 
             auto request = *it;
@@ -84,7 +82,7 @@ public:
         auto slot = free_slots_.back();
         free_slots_.pop_back();
 
-        return ResidencyDecision {slot, std::nullopt};
+        return {.slot = slot, .evicted = std::nullopt};
     }
 
     auto Cancel(const PageSlot& slot) -> void {

@@ -138,7 +138,7 @@ struct PageManager {
     auto RequestPage(const PageRequest& request) -> void {
         auto alloc_result = page_cache.Acquire(request);
         if (!alloc_result.slot) {
-            std::println(std::cerr, "Unable to allocate physical page");
+            std::println("No evictable slot available at the moment");
             processing.erase(request);
             return;
         }
