@@ -75,9 +75,9 @@ auto main() -> int {
     page_shader.SetUniform("u_TextureAtlas", 0);
     page_shader.SetUniform("u_PageTable", 1);
     page_shader.SetUniform("u_VirtualSize", virtual_size);
-    page_shader.SetUniform("u_PageGrid", virtual_size / page_size);
+    page_shader.SetUniform("u_PageGrid", virtual_size / slot_size);
     page_shader.SetUniform("u_AtlasSize", atlas_size);
-    page_shader.SetUniform("u_PageSize", page_size);
+    page_shader.SetUniform("u_PageSize", slot_size);
     page_shader.SetUniform("u_PagePadding", padding);
     page_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {0.0f, static_cast<float>(lods - 1)});
 
@@ -88,7 +88,7 @@ auto main() -> int {
 
     feedback_shader.Use();
     feedback_shader.SetUniform("u_VirtualSize", virtual_size);
-    feedback_shader.SetUniform("u_PageGrid", virtual_size / page_size);
+    feedback_shader.SetUniform("u_PageGrid", virtual_size / slot_size);
     feedback_shader.SetUniform("u_BufferScreenRatio", 0.25f);
     feedback_shader.SetUniform("u_MinMaxMipLevel", glm::vec2 {0.0f, static_cast<float>(lods - 1)});
 
@@ -100,7 +100,7 @@ auto main() -> int {
     minimap_shader.SetUniform("u_Texture0", 0);
 
     auto page_manager = PageManager {virtual_size, lods};
-    auto feedback_buffer = FeedbackBuffer {buffer_size.x, buffer_size.y};
+    auto feedback_buffer = FeedbackBuffer {buffer_size};
 
     const auto feedbackPass = [&]() {
         feedback_buffer.Bind();

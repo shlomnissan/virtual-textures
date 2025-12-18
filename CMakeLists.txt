@@ -60,6 +60,7 @@ add_executable(${EXECUTABLE}
     ${CORE_SOURCES}
     ${EXTERNAL_SOURCES}
     src/main.cpp
+    src/feedback_buffer.cpp
     src/feedback_buffer.h
     src/page_cache.cpp
     src/page_cache.h

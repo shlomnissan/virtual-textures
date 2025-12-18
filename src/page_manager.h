@@ -18,11 +18,13 @@
 #include "page_cache.h"
 #include "types.h"
 
-constexpr auto pages = glm::ivec2(8, 8);
-constexpr auto page_size = glm::vec2(512.0f, 512.0f);
+#include <glad/glad.h>
+
+constexpr auto slots = glm::ivec2(8, 8);
+constexpr auto slot_size = glm::vec2(512.0f, 512.0f);
 constexpr auto padding = glm::vec2(4.0f, 4.0f);
-constexpr auto physical_page_size = page_size + padding;
-constexpr auto atlas_size = physical_page_size * glm::vec2(pages);
+constexpr auto physical_slot_size = slot_size + padding;
+constexpr auto atlas_size = physical_slot_size * glm::vec2(slots);
 constexpr auto min_pinned_lod_idx = 3u;
 
 struct PendingUpload {
@@ -37,7 +39,7 @@ struct PendingFailure {
 };
 
 struct PageManager {
-    PageCache page_cache {pages, min_pinned_lod_idx};
+    PageCache page_cache {slots, min_pinned_lod_idx};
 
     PageTables page_table;
 
@@ -54,7 +56,7 @@ struct PageManager {
 
     size_t alloc_idx = 0;
 
-    PageManager(const glm::vec2& virtual_size, unsigned int lods) : page_table(virtual_size / page_size) {
+    PageManager(const glm::vec2& virtual_size, unsigned int lods) : page_table(virtual_size / slot_size) {
         atlas.InitTexture({
             .width = static_cast<int>(atlas_size.x),
             .height = static_cast<int>(atlas_size.y),
@@ -68,8 +70,8 @@ struct PageManager {
 
         // preload pinned pages
         for (auto lod = min_pinned_lod_idx; lod < lods; ++lod) {
-            auto rows = std::max(static_cast<int>(virtual_size.y / page_size.y) >> lod, 1);
-            auto cols = std::max(static_cast<int>(virtual_size.x / page_size.x) >> lod, 1);
+            auto rows = std::max(static_cast<int>(virtual_size.y / slot_size.y) >> lod, 1);
+            auto cols = std::max(static_cast<int>(virtual_size.x / slot_size.x) >> lod, 1);
             for (auto row = 0; row < rows; row++) {
                 for (auto col = 0; col < cols; col++) {
                     RequestPage(PageRequest {.lod = lod, .x = col, .y = row});
@@ -120,10 +122,10 @@ struct PageManager {
 
         for (const auto& u : uploads) {
             atlas.Update(
-                physical_page_size.x * u.page_slot.x,
-                physical_page_size.y * u.page_slot.y,
-                physical_page_size.x,
-                physical_page_size.y,
+                physical_slot_size.x * u.page_slot.x,
+                physical_slot_size.y * u.page_slot.y,
+                physical_slot_size.x,
+                physical_slot_size.y,
                 u.image->Data()
             );
 

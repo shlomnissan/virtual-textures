@@ -5,12 +5,12 @@
 
 #include <cassert>
 
-PageCache::PageCache(const glm::ivec2& pages, unsigned int min_pinned_lod_idx)
-  : capacity_(pages.x * pages.y), min_pinned_lod_idx_(min_pinned_lod_idx)
+PageCache::PageCache(const glm::ivec2& slots, unsigned int min_pinned_lod_idx)
+  : capacity_(slots.x * slots.y), min_pinned_lod_idx_(min_pinned_lod_idx)
 {
     free_slots_.reserve(capacity_);
-    for (auto y = 0; y < pages.y; ++y) {
-        for (auto x = 0; x < pages.x; ++x) {
+    for (auto y = 0; y < slots.y; ++y) {
+        for (auto x = 0; x < slots.x; ++x) {
             free_slots_.emplace_back(x, y);
         }
     }

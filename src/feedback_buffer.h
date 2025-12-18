@@ -4,44 +4,24 @@
 #include <array>
 #include <vector>
 
+#include <glm/vec2.hpp>
+
 #include "core/framebuffer.h"
 
-constexpr std::array<GLuint, 4> clear {0xFFFFFFFFu, 0, 0, 0};
+class FeedbackBuffer {
+public:
+    FeedbackBuffer(const glm::ivec2& size);
 
-struct FeedbackBuffer {
-    Framebuffer framebuffer;
+    auto Bind() const -> void;
 
-    Texture2D texture;
+    auto Unbind() const -> void;
 
-    std::vector<GLuint> buffer;
+    [[nodiscard]] auto Data() -> const std::vector<GLuint>&;
 
-    FeedbackBuffer(int width, int height) : framebuffer(width, height), buffer(width * height) {
-        texture.InitTexture({
-            .width = framebuffer.Width(),
-            .height = framebuffer.Height(),
-            .levels = 0,
-            .internal_format = GL_R32UI,
-            .format = GL_RED_INTEGER,
-            .type = GL_UNSIGNED_INT,
-            .min_filter = GL_NEAREST,
-            .data = nullptr
-        });
+private:
+    Framebuffer framebuffer_;
 
-        framebuffer.AddColorAttachment(texture.Id());
-    }
+    Texture2D texture_;
 
-    auto Bind() const -> void {
-        framebuffer.Bind();
-        glViewport(0, 0, framebuffer.Width(), framebuffer.Height());
-        glClearBufferuiv(GL_COLOR, 0, clear.data());
-    }
-
-    auto Data() -> const std::vector<GLuint>& {
-        texture.Read(buffer.data());
-        return buffer;
-    }
-
-    auto Unbind() const -> void {
-        framebuffer.Unbind();
-    }
+    std::vector<GLuint> buffer_;
 };
