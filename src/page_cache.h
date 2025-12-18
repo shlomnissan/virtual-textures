@@ -91,10 +91,13 @@ public:
 
 private:
     size_t capacity_;
+
     unsigned int min_pinned_lod_idx_;
 
     std::vector<PageSlot> free_slots_ {};
+
     std::list<PageRequest> lru_list_ {};
+
     std::unordered_map<PageRequest, std::list<PageRequest>::iterator> lru_map_ {};
     std::unordered_map<PageRequest, PageSlot> req_to_slot_ {};
 };

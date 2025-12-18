@@ -54,7 +54,7 @@ struct PageManager {
 
     size_t alloc_idx = 0;
 
-    PageManager(const glm::ivec2& virtual_size, unsigned int lods) : page_table(virtual_size, page_size) {
+    PageManager(const glm::vec2& virtual_size, unsigned int lods) : page_table(virtual_size / page_size) {
         atlas.InitTexture({
             .width = static_cast<int>(atlas_size.x),
             .height = static_cast<int>(atlas_size.y),

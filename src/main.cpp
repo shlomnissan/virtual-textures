@@ -119,7 +119,7 @@ auto main() -> int {
         glClear(GL_COLOR_BUFFER_BIT);
 
         page_manager.atlas.Bind(0);
-        page_manager.page_table.texture.Bind(1);
+        page_manager.page_table.Texture().Bind(1);
 
         page_shader.Use();
         page_shader.SetUniform("u_Projection", camera_3d.projection);

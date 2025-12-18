@@ -63,6 +63,7 @@ add_executable(${EXECUTABLE}
     src/feedback_buffer.h
     src/page_cache.h
     src/page_manager.h
+    src/page_tables.cpp
     src/page_tables.h
     src/types.h
 )
