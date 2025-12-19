@@ -4,7 +4,7 @@ A minimal OpenGL prototype implementing virtual texturing without hardware spars
 
 This repository contains a small self-contained prototype that implements the core ideas behind virtual texturing. It focuses on correctness and clarity rather than completeness or performance. The project demonstrates how large textures can be split into pages, mapped through a GPU page table, and streamed into a physical atlas on demand based on what the GPU actually samples.
 
-<img width="1920" height="1112" alt="vt-window" src="https://github.com/user-attachments/assets/aac35b1d-168d-4f51-92fe-39173d68d557" />
+![Virtual texturing demo](https://github.com/user-attachments/assets/aac35b1d-168d-4f51-92fe-39173d68d557)
 
 
 ### Why this exists
@@ -30,7 +30,7 @@ The example UV grid texture used in the demo is by Maurus Löffel. You can downl
 
 ### Building the project
 
-The project uses [CMake](http://cmake.org/) and [vcpkg](https://vcpkg.io/en/) for dependency management. Make sure vcpkg is installed and integrated with CMake.
+The project uses [CMake](http://cmake.org/) and [vcpkg](https://vcpkg.io/en/) for dependency management.
 
 ```bash
 git clone https://github.com/shlomnissan/virtual-textures.git
