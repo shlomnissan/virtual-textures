@@ -20,17 +20,15 @@ Virtual texturing is usually explained at a high level and implemented behind la
 - Derivative-based mip selection
 - Page padding for bilinear filtering
 
-### Demo
+### Prototype overview
 
 The demo renders a simple plane textured with a virtual texture. A minimap overlay shows the currently resident pages and feedback results making page streaming behavior visible in real time. Camera movement and zoom trigger higher-resolution tiles to be requested and loaded incrementally.
-
-#### Tile Generation
 
 Texture tiles are generated offline using [vtile](https://github.com/shlomnissan/vtile). The sample texture is split into padded tiled mip levels before runtime. This keeps the runtime code focused on page management and streaming rather than image processing.
 
 The example UV grid texture used in the demo is by Maurus Löffel. You can download the [source image here](https://drive.google.com/drive/folders/1K_G_hbFyohR8-xCCAlYx8xhsd_a7Ir7G).
 
-### Building the Project
+### Building the project
 
 The project uses [CMake](http://cmake.org/) and [vcpkg](https://vcpkg.io/en/) for dependency management. Make sure vcpkg is installed and integrated with CMake.
 
