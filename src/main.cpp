@@ -121,8 +121,8 @@ auto main() -> int {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        page_manager.atlas.Bind(0);
-        page_manager.page_tables.Texture().Bind(1);
+        page_manager.BindTexture(PageManager::Texture::Atlas);
+        page_manager.BindTexture(PageManager::Texture::PageTables);
 
         page_shader.Use();
         page_shader.SetUniform("u_Projection", camera_3d.projection);
@@ -145,7 +145,7 @@ auto main() -> int {
 
         page_manager.FlushUploadQueue();
         page_manager.IngestFeedback(feedback_buffer.Data());
-        page_manager.page_tables.Update();
+        page_manager.UpdatePageTables();
 
         mainPass();
     });
