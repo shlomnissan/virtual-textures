@@ -4,9 +4,6 @@ A minimal OpenGL prototype implementing virtual texturing without hardware spars
 
 This repository contains a small self-contained prototype that implements the core ideas behind virtual texturing. It focuses on correctness and clarity rather than completeness or performance. The project demonstrates how large textures can be split into pages, mapped through a GPU page table, and streamed into a physical atlas on demand based on what the GPU actually samples.
 
-![Virtual texturing demo](https://github.com/user-attachments/assets/aac35b1d-168d-4f51-92fe-39173d68d557)
-
-
 ### Why this exists
 
 Virtual texturing is usually explained at a high level and implemented behind layers of engine code. This prototype strips it down to the essentials so the system can be understood and reasoned about end to end.
@@ -20,7 +17,7 @@ Virtual texturing is usually explained at a high level and implemented behind la
 - Derivative-based mip selection
 - Page padding for bilinear filtering
 
-### Prototype overview
+### Project overview
 
 The demo renders a simple plane textured with a virtual texture. A minimap overlay shows the currently resident pages and feedback results making page streaming behavior visible in real time. Camera movement and zoom trigger higher-resolution tiles to be requested and loaded incrementally.
 
@@ -28,7 +25,9 @@ Texture tiles are generated offline using [vtile](https://github.com/shlomnissan
 
 The example UV grid texture used in the demo is by Maurus Löffel. You can download the [source image here](https://drive.google.com/drive/folders/1K_G_hbFyohR8-xCCAlYx8xhsd_a7Ir7G).
 
-### Building the project
+![Virtual texturing demo](https://github.com/user-attachments/assets/aac35b1d-168d-4f51-92fe-39173d68d557)
+
+## Building the project
 
 The project uses [CMake](http://cmake.org/) and [vcpkg](https://vcpkg.io/en/) for dependency management.
 
@@ -69,4 +68,3 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
-
