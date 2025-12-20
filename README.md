@@ -12,9 +12,8 @@ Virtual texturing is usually explained at a high level and implemented behind la
 
 - Virtual texture sampling via page table indirection
 - Physical texture atlas with page residency
-- GPU feedback pass to detect page usage
+- GPU feedback pass to detect page usage and mip selection
 - CPU-side page cache and simple eviction
-- Derivative-based mip selection
 - Page padding for bilinear filtering
 
 ### Project overview
