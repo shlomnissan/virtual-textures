@@ -11,8 +11,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(EXECUTABLE virtual_texture)
 
-message(${CMAKE_SOURCE_DIR}/cmake)
-
 include(cmake/ShaderString.cmake)
 ShaderString()
 
@@ -56,7 +54,6 @@ set(EXTERNAL_SOURCES
 )
 
 add_executable(${EXECUTABLE}
-    ${LIBS_SOURCES}
     ${CORE_SOURCES}
     ${EXTERNAL_SOURCES}
     src/main.cpp
