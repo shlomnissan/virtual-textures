@@ -23,7 +23,7 @@ public:
 
     ~OrbitControls();
 
-    auto Update(float dt) -> void;
+    auto Update() -> void;
 
 private:
     PerspectiveCamera* camera_;

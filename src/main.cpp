@@ -161,7 +161,7 @@ auto main() -> int {
     };
 
     window.Start([&]([[maybe_unused]] const double dt){
-        controls.Update(static_cast<float>(dt));
+        controls.Update();
         feedbackPass();
 
         page_manager.FlushUploadQueue();

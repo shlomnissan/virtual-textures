@@ -13,7 +13,6 @@ namespace {
 
 constexpr glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
 constexpr float pi_over_2 {static_cast<float>(std::numbers::pi / 2)};
-constexpr float pi_times_2 {static_cast<float>(std::numbers::pi * 2)};
 constexpr float orbit_speed {0.01f};
 constexpr float pan_speed {0.001f};
 constexpr float zoom_speed {0.1f};
@@ -70,7 +69,7 @@ OrbitControls::OrbitControls(PerspectiveCamera* camera) : camera_(camera) {
     EventDispatcher::Get().AddEventListener("mouse_event", mouse_event_listener_);
 }
 
-auto OrbitControls::Update(float dt) -> void {
+auto OrbitControls::Update() -> void {
     if (camera_ == nullptr) return;
 
     theta = std::clamp(theta, -pitch_limit, pitch_limit);
