@@ -1,12 +1,12 @@
 # virtual-textures
 
-A minimal OpenGL prototype implementing virtual texturing without hardware sparse textures.
+A minimal prototype implementing virtual texturing without hardware sparse textures.
 
-This repository contains a small self-contained prototype that implements the core ideas behind virtual texturing. It focuses on correctness and clarity rather than completeness or performance. The project demonstrates how large textures can be split into pages, mapped through a GPU page table, and streamed into a physical atlas on demand based on what the GPU actually samples.
-
-### Why this exists
+This repository contains a small prototype that implements the core ideas behind virtual texturing. It focuses on correctness and clarity rather than completeness or performance. The project demonstrates how large textures can be split into pages, mapped through a GPU page table, and streamed into a physical atlas on demand based on what the GPU actually samples.
 
 Virtual texturing is usually explained at a high level and implemented behind layers of engine code. This prototype strips it down to the essentials so the system can be understood and reasoned about end to end.
+
+![virtual texture prototype](https://github.com/user-attachments/assets/983ee7d7-70d2-4652-ae4e-8dc583d55501)
 
 ### Features
 
@@ -16,31 +16,40 @@ Virtual texturing is usually explained at a high level and implemented behind la
 - CPU-side page cache and simple eviction
 - Page padding for bilinear filtering
 
-### Project overview
+### Project Overview
 
-The demo renders a simple plane textured with a virtual texture. A minimap overlay shows the currently resident pages and feedback results making page streaming behavior visible in real time. Camera movement and zoom trigger higher-resolution tiles to be requested and loaded incrementally.
+The demo renders a simple terrain using a virtual texture. A minimap overlay displays currently resident pages and feedback results, making page streaming behavior visible in real time. Camera movement and zooming trigger higher-resolution tiles to be requested and loaded incrementally.
 
-Texture tiles are generated offline using [vtile](https://github.com/shlomnissan/vtile). The sample texture is split into padded tiled mip levels before runtime. This keeps the runtime code focused on page management and streaming rather than image processing.
+- Rendering: Powered by [VGLX](https://www.vglx.org/) which handles internal dependencies.
+- Tile Generation: Textures are generated offline using [vtile](https://github.com/shlomnissan/vtile).
+- Assets: The UV grid texture is by Maurus Löffel. You can download the [source image here](https://drive.google.com/drive/folders/1K_G_hbFyohR8-xCCAlYx8xhsd_a7Ir7G).
 
-The example UV grid texture used in the demo is by Maurus Löffel. You can download the [source image here](https://drive.google.com/drive/folders/1K_G_hbFyohR8-xCCAlYx8xhsd_a7Ir7G).
+### Building the Project
 
-![Virtual texturing demo](https://github.com/user-attachments/assets/8082b086-7b35-4ae5-b33c-01bf09b62796)
-
-## Building the project
-
-The project uses [CMake](http://cmake.org/) and [vcpkg](https://vcpkg.io/en/) for dependency management.
+The project uses [CMake](http://cmake.org/) and [VGLX](https://vglx.org) for rendering. The easiest way to install VGLX is with the Python installer included in the repository. It guides the process and builds the engine using the correct presets for your system.
 
 ```bash
+# clone the repository
+git clone https://github.com/shlomnissan/vglx.git
+cd vglx
+
+# run the installer
+python3 -m tools.installer.main
+```
+
+With VGLX installed, you can build this prototype like any other CMake project.
+
+```bash
+# clone the repository
 git clone https://github.com/shlomnissan/virtual-textures.git
 cd virtual-textures
 
-cmake -S . -B build \
-  -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+# configure cmake
+cmake -S . -B build
 
+# build the project
 cmake --build build
 ```
-
-Exact dependency versions are managed through `vcpkg.json`.
 
 ## License
 

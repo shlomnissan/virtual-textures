@@ -1,106 +1,73 @@
-// Copyright © 2025 - Present, Shlomi Nissan.
-// All rights reserved.
+/*
+===========================================================================
+  VGLX https://vglx.org
+  Copyright © 2024 - Present, Shlomi Nissan
+===========================================================================
+*/
 
-#include "page_manager.h"
+#include "page_manager.hpp"
 
+#include <algorithm>
+#include <filesystem>
 #include <format>
 #include <print>
+#include <set>
 
-#include <glad/glad.h>
+PageManager::PageManager(ImageLoader* image_loader) : image_loader_(image_loader) {
+    static const auto atlas_size = kSlotSize * kAtlasSlots;
 
-PageManager::PageManager(const Parameters& params)
-    : page_cache_(slots_in_cache, min_pinned_lod_idx),
-    page_tables_(params.virtual_size / params.page_size),
-    page_size_(params.page_size),
-    slot_size_(params.page_size + params.page_padding),
-    atlas_size_(slot_size_ * glm::vec2(slots_in_cache))
-{
-    atlas_.InitTexture({
-        .width = static_cast<int>(atlas_size_.x),
-        .height = static_cast<int>(atlas_size_.y),
-        .levels = 0,
-        .internal_format = GL_RGBA,
-        .format = GL_RGBA,
-        .type = GL_UNSIGNED_BYTE,
-        .min_filter = GL_LINEAR,
-        .data = nullptr
+    tex_atlas_ = vglx::DynamicTexture2D::Create({
+        .width = static_cast<int>(atlas_size.x),
+        .height = static_cast<int>(atlas_size.y),
+        .mips = 1,
+        .format = vglx::Texture::Format::SRGBA8,
+        .color_space = vglx::Texture::ColorSpace::sRGB
     });
 
-    // preload pinned pages
-    for (auto lod = min_pinned_lod_idx; lod < LODs(); ++lod) {
-        auto rows = std::max(static_cast<int>(params.virtual_size.y / page_size_.y) >> lod, 1);
-        auto cols = std::max(static_cast<int>(params.virtual_size.x / page_size_.x) >> lod, 1);
+    tex_atlas_->min_filter = vglx::Texture::MinFilter::Linear;
+
+    for (auto i = kMinPinnedLod; i < kLods; ++i) {
+        auto rows = std::max(static_cast<int>(kVirtualSize.y / kPageSize.y) >> i, 1);
+        auto cols = std::max(static_cast<int>(kVirtualSize.x / kPageSize.x) >> i, 1);
         for (auto row = 0; row < rows; row++) {
             for (auto col = 0; col < cols; col++) {
-                RequestPage(PageRequest {.lod = lod, .x = col, .y = row});
+                RequestPage({.lod = i, .x = col, .y = row});
             }
         }
     }
 }
 
-auto PageManager::IngestFeedback(const std::vector<uint32_t>& feedback) -> void {
+auto PageManager::IngestFeedback(const std::span<const uint32_t> feedback) -> void {
     std::set<PageRequest> requests {};
 
     for (auto packed : feedback) {
-        if (packed != 0xFFFFFFFFu) {
-            requests.emplace(
-                packed & 0x1Fu,
-                static_cast<int>((packed >> 5) & 0xFFu),
-                static_cast<int>((packed >> 13) & 0xFFu)
-            );
-        }
+        if ((packed & (1u << 31)) == 0u) continue; // empty
+
+        packed &= ~(1u << 31); // strip valid bit
+        requests.emplace(
+            packed & 0x1Fu,
+            static_cast<int>((packed >> 5)  & 0xFFu),
+            static_cast<int>((packed >> 13) & 0xFFu)
+        );
     }
 
     for (auto request : requests) {
         page_cache_.Touch(request);
-        if (
-            !page_tables_.IsResident(request.lod, request.x, request.y) &&
-            processing_.find(request) == processing_.end()
-        ) {
+        auto is_resident = page_tables_.IsResident(request);
+        auto is_handled = requests_.contains(request);
+        if (!is_resident && !is_handled) {
             RequestPage(request);
         }
     }
-}
 
-auto PageManager::FlushUploadQueue() -> void {
-    std::vector<PendingUpload> uploads;
-    std::vector<PendingFailure> failures;
-
-    {
-        auto lock = std::lock_guard(upload_mutex_);
-        uploads.swap(upload_queue_);
-        failures.swap(failure_queue_);
-    }
-
-    for (const auto& f : failures) {
-        page_cache_.Cancel(f.page_slot);
-        processing_.erase(f.request);
-    }
-
-    for (const auto& u : uploads) {
-        atlas_.Update(
-            slot_size_.x * u.page_slot.x,
-            slot_size_.y * u.page_slot.y,
-            slot_size_.x,
-            slot_size_.y,
-            u.image->Data()
-        );
-
-        auto entry = uint32_t {
-            0x1 | ((u.page_slot.x & 0xFFu) << 1) | ((u.page_slot.y & 0xFFu) << 9)
-        };
-
-        page_tables_.Write(u.request, entry);
-        page_cache_.Commit(u.request, u.page_slot);
-        processing_.erase(u.request);
-    }
+    page_tables_.SyncTables();
 }
 
 auto PageManager::RequestPage(const PageRequest& request) -> void {
     auto alloc_result = page_cache_.Acquire(request);
     if (!alloc_result.slot) {
         std::println("No evictable slot available at the moment");
-        processing_.erase(request);
+        requests_.erase(request);
         return;
     }
 
@@ -108,27 +75,54 @@ auto PageManager::RequestPage(const PageRequest& request) -> void {
         page_tables_.Write(alloc_result.evicted.value(), 0u);
     }
 
-    auto slot = alloc_result.slot.value();
-    auto path = std::format("assets/pages/{}_{}_{}.png", request.lod, request.x, request.y);
-    processing_.emplace(request);
+    auto path = fs::path {std::format("assets/pages/{}_{}_{}.png", request.lod, request.x, request.y)};
+    requests_.emplace(request);
 
-    loader_->LoadAsync(path, [this, request, slot](auto loader_result) {
-        auto lock = std::lock_guard(upload_mutex_);
-        if (loader_result) {
-            upload_queue_.emplace_back(
-                request,
-                slot,
-                std::move(loader_result.value())
-            );
-        } else {
-            std::println("{}", loader_result.error());
-            failure_queue_.emplace_back(request, slot);
-        }
-
+    processing_requests_.emplace_back(ProcessingRequest {
+        .request = request,
+        .slot = alloc_result.slot.value(),
+        .handle = image_loader_->LoadAsync(path)
     });
 }
 
-auto PageManager::BindTexture(Texture type) -> void {
-    if (type == Texture::Atlas) atlas_.Bind(0);
-    if (type == Texture::PageTables) page_tables_.Texture().Bind(1);
+auto PageManager::FlushProcessingRequests() -> void {
+    static const auto slot_size_x = static_cast<int>(kSlotSize.x);
+    static const auto slot_size_y = static_cast<int>(kSlotSize.y);
+
+    std::erase_if(processing_requests_, [this](auto& req){
+        if (auto res = req.handle.TryTake()) {
+            tex_atlas_->UpdateSubregion(
+                0,
+                slot_size_x * req.slot.x,
+                slot_size_y * req.slot.y,
+                slot_size_x,
+                slot_size_y,
+                res.value()
+            );
+
+            auto entry = uint32_t {
+                0x1 | ((req.slot.x & 0xFFu) << 1) | ((req.slot.y & 0xFFu) << 9)
+            };
+
+            page_tables_.Write(req.request, entry);
+            page_cache_.Commit(req.request, req.slot);
+            requests_.erase(req.request);
+
+            return true;
+        }
+
+        if (auto err = req.handle.TryError()) {
+            std::println(stderr, "{}", err.value());
+            return true;
+        }
+        return false;
+    });
+}
+
+auto PageManager::GetAtlasTexture() -> std::shared_ptr<vglx::DynamicTexture2D> {
+    return tex_atlas_;
+}
+
+auto PageManager::GetPageTablesTexture() -> std::shared_ptr<vglx::DynamicTexture2D> {
+    return page_tables_.tex_tables_;
 }

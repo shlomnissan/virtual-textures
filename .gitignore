@@ -1,5 +1,4 @@
 # vscode
-
 .cache/*
 .vscode/*
 !.vscode/tasks.json
@@ -10,13 +9,14 @@
 *.vsix
 
 # cmake
-
+**/build/
+**/out/
+**/release/
 src/shaders/headers/*.h
 src/shaders/snippets/headers/*.h
-build/*
-release/*
 CMakeUserPresets.json
 
+# imgui
 imgui.ini
 
 # macOS

@@ -1,8 +1,7 @@
 #version 410 core
-#pragma debug(on)
-#pragma optimize(off)
+#pragma inject_attributes
 
-layout(location = 0) out uvec4 o_Feedback;
+layout (location = 0) out uvec4 v_FragColor;
 
 in vec2 v_TexCoord;
 
@@ -11,11 +10,13 @@ uniform vec2 u_PageGrid;
 uniform vec2 u_MinMaxMipLevel;
 uniform float u_BufferScreenRatio;
 
+const uint VALID_BIT = 1u << 31;
 const uint MIP_MASK  = 0x1Fu;
 const uint PAGE_MASK = 0xFFu;
 
 uint PackPageData(in uint mip, in uint page_x, in uint page_y) {
-    return (mip & MIP_MASK) |
+    return VALID_BIT |
+          (mip & MIP_MASK) |
           ((page_x & PAGE_MASK) << 5) |
           ((page_y & PAGE_MASK) << 13);
 }
@@ -45,5 +46,5 @@ void main() {
 
     uint data = PackPageData(mip_level, uint(page_coords.x), uint(page_coords.y));
 
-    o_Feedback = uvec4(data, 0, 0, 0);
+    v_FragColor = uvec4(data, 0, 0, 0);
 }

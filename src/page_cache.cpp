@@ -1,24 +1,25 @@
-// Copyright © 2025 - Present, Shlomi Nissan.
-// All rights reserved.
+/*
+===========================================================================
+  VGLX https://vglx.org
+  Copyright © 2024 - Present, Shlomi Nissan
+===========================================================================
+*/
 
-#include "page_cache.h"
+#include "page_cache.hpp"
 
 #include <cassert>
 
-PageCache::PageCache(const glm::ivec2& slots, unsigned int min_pinned_lod_idx)
-  : capacity_(slots.x * slots.y), min_pinned_lod_idx_(min_pinned_lod_idx)
-{
+PageCache::PageCache() {
     free_slots_.reserve(capacity_);
-    for (auto y = 0; y < slots.y; ++y) {
-        for (auto x = 0; x < slots.x; ++x) {
+    for (auto y = 0; y < static_cast<int>(kAtlasSlots.y); ++y) {
+        for (auto x = 0; x < static_cast<int>(kAtlasSlots.x); ++x) {
             free_slots_.emplace_back(x, y);
         }
     }
 }
 
 auto PageCache::Commit(const PageRequest& request, const PageSlot& slot) -> void {
-    auto already_resident = req_to_slot_.contains(request);
-    if (already_resident) {
+    if (auto already_resident = req_to_slot_.contains(request)) {
         assert(!already_resident);
         return;
     }
@@ -33,7 +34,7 @@ auto PageCache::Cancel(const PageSlot& slot) -> void {
 }
 
 auto PageCache::Touch(const PageRequest& request) -> void {
-    if (request.lod >= min_pinned_lod_idx_) return; // no-op for pinned lods
+    if (request.lod >= kMinPinnedLod) return; // no-op for pinned lods
     if (auto it = lru_map_.find(request); it != lru_map_.end()) {
         lru_list_.splice(lru_list_.begin(), lru_list_, it->second);
     }
@@ -44,34 +45,33 @@ auto PageCache::Acquire(const PageRequest& request) -> ResidencyDecision {
         return {.slot = it->second, .evicted = std::nullopt};
     }
 
-    if (free_slots_.empty()) {
-        auto it = lru_list_.rbegin();
-
-        while (it != lru_list_.rend()) {
-            if (it->lod < min_pinned_lod_idx_) {
-                break;
-            }
-            ++it;
-        }
-
-        if (it == lru_list_.rend()) {
-            return {.slot = std::nullopt, .evicted = std::nullopt};
-        }
-
-        auto request = *it;
-
-        assert(req_to_slot_.contains(request));
-        auto slot = req_to_slot_.at(request);
-
-        lru_list_.erase(lru_map_.at(request));
-        lru_map_.erase(request);
-        req_to_slot_.erase(request);
-
-        return {.slot = slot, .evicted = request};
+    if (!free_slots_.empty()) {
+        auto slot = free_slots_.back();
+        free_slots_.pop_back();
+        return {.slot = slot, .evicted = std::nullopt};
     }
 
-    auto slot = free_slots_.back();
-    free_slots_.pop_back();
+    auto it = lru_list_.rbegin();
 
-    return {.slot = slot, .evicted = std::nullopt};
+    while (it != lru_list_.rend()) {
+        if (it->lod < kMinPinnedLod) {
+            break;
+        }
+        ++it;
+    }
+
+    if (it == lru_list_.rend()) {
+        return {.slot = std::nullopt, .evicted = std::nullopt};
+    }
+
+    auto evicted_request = *it;
+
+    assert(req_to_slot_.contains(evicted_request));
+    auto slot = req_to_slot_.at(evicted_request);
+
+    lru_list_.erase(lru_map_.at(evicted_request));
+    lru_map_.erase(evicted_request);
+    req_to_slot_.erase(evicted_request);
+
+    return {.slot = slot, .evicted = evicted_request};
 }
