@@ -1,6 +1,6 @@
 # virtual-textures
 
-A minimal prototype implementing virtual texturing without hardware sparse textures, put together while writing “How Virtual Textures Really Work.”
+A minimal prototype implementing virtual texturing without hardware sparse textures, put together while writing [How Virtual Textures Really Work](https://www.shlom.dev/articles/how-virtual-textures-work/).
 
 This repository contains a small prototype that implements the core ideas behind virtual texturing. It focuses on correctness and clarity rather than completeness or performance. The project demonstrates how large textures can be split into pages, mapped through a GPU page table, and streamed into a physical atlas on demand based on what the GPU actually samples.
 
