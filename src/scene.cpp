@@ -67,7 +67,7 @@ auto Scene::OnAttached(vglx::SharedContextPointer context) -> void {
 
 auto Scene::OnUpdate([[maybe_unused]] float delta) -> void {
     if (auto result = mesh_handle.TryTake()) {
-        terrain_ = static_cast<vglx::Mesh*>(result.value()->Children().front().get());
+        terrain_ = static_cast<vglx::Mesh*>(result.value()->GetChildren().front().get());
         terrain_->SetMaterial(default_material_);
         terrain_->GetMaterial()->two_sided = true;
         terrain_->SetScale(30.0f);
