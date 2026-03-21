@@ -37,7 +37,7 @@ PageTables::PageTables() {
         .height = pages_y,
         .mips = static_cast<unsigned>(tables_.size()),
         .format = vglx::Texture::Format::R32UI,
-        .color_space = vglx::Texture::ColorSpace::Linear
+        .color_space = vglx::Image::ColorSpace::Linear
     });
 }
 

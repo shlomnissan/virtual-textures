@@ -21,7 +21,7 @@ PageManager::PageManager(ImageLoader* image_loader) : image_loader_(image_loader
         .height = static_cast<int>(atlas_size.y),
         .mips = 1,
         .format = vglx::Texture::Format::SRGBA8,
-        .color_space = vglx::Texture::ColorSpace::sRGB
+        .color_space = vglx::Image::ColorSpace::sRGB
     });
 
     tex_atlas_->min_filter = vglx::Texture::MinFilter::Linear;
