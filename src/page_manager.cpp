@@ -13,7 +13,9 @@
 #include <print>
 #include <set>
 
-PageManager::PageManager(ImageLoader* image_loader) : image_loader_(image_loader) {
+namespace fs = std::filesystem;
+
+PageManager::PageManager(vglx::SharedContextPointer context) : context_(context) {
     static const auto atlas_size = kSlotSize * kAtlasSlots;
 
     tex_atlas_ = vglx::DynamicTexture2D::Create({
@@ -81,7 +83,7 @@ auto PageManager::RequestPage(const PageRequest& request) -> void {
     processing_requests_.emplace_back(ProcessingRequest {
         .request = request,
         .slot = alloc_result.slot.value(),
-        .handle = image_loader_->LoadAsync(path)
+        .handle = context_->image_loader->LoadAsync(path)
     });
 }
 
@@ -97,7 +99,7 @@ auto PageManager::FlushProcessingRequests() -> void {
                 slot_size_y * req.slot.y,
                 slot_size_x,
                 slot_size_y,
-                res.value()
+                res->data
             );
 
             auto entry = uint32_t {

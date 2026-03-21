@@ -14,8 +14,6 @@
 
 #include "scene.hpp"
 
-#include "loaders/image_loader.hpp"
-
 auto main() -> int {
     auto window = vglx::Window {{
         .title = "Virtual Textures",
@@ -58,8 +56,7 @@ auto main() -> int {
     });
 
     auto context = vglx::SharedContext::Create(&window, camera.get());
-    auto image_loader = ImageLoader {context->load_scheduler.get()};
-    auto page_manager = PageManager {&image_loader};
+    auto page_manager = PageManager {context.get()};
     auto timer = vglx::FrameTimer {true};
 
     auto scene = std::make_unique<Scene>(

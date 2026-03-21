@@ -17,17 +17,15 @@
 #include "page_tables.hpp"
 #include "page_cache.hpp"
 
-#include "loaders/image_loader.hpp"
-
 struct ProcessingRequest {
     PageRequest request;
     PageSlot slot;
-    ImageLoadHandle handle;
+    vglx::ImageLoadHandle handle;
 };
 
 class PageManager {
 public:
-    explicit PageManager(ImageLoader* image_loader);
+    explicit PageManager(vglx::SharedContextPointer context);
 
     auto IngestFeedback(const std::span<const uint32_t> feedback) -> void;
 
@@ -50,5 +48,5 @@ private:
 
     std::set<PageRequest> requests_ {};
 
-    ImageLoader* image_loader_ {nullptr};
+    vglx::SharedContextPointer context_ {nullptr};
 };

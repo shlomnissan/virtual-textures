@@ -6,8 +6,6 @@ set(EXECUTABLE ${PROJECT_NAME})
 
 set(SOURCE_CODE
     globals.hpp
-    loaders/image_loader.cpp
-    loaders/image_loader.hpp
     main.cpp
     page_cache.cpp
     page_cache.hpp
@@ -24,7 +22,6 @@ add_executable(${EXECUTABLE} ${SOURCE_CODE})
 target_include_directories(
     ${EXECUTABLE} PRIVATE
     ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/vendor
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE vglx::vglx)
