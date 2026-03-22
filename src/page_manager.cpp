@@ -99,7 +99,7 @@ auto PageManager::FlushProcessingRequests() -> void {
                 slot_size_y * req.slot.y,
                 slot_size_x,
                 slot_size_y,
-                res->data
+                res.value()->data
             );
 
             auto entry = uint32_t {

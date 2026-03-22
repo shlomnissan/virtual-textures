@@ -60,6 +60,9 @@ auto Scene::OnAttached(vglx::SharedContextPointer context) -> void {
         .radius = 350.0f,
         .pitch = vglx::math::DegToRad(20.0f),
         .yaw = vglx::math::DegToRad(30.0f),
+        .orbit_speed = 0.5f,
+        .pan_speed = 0.05f,
+        .zoom_speed = 0.05f
     }));
 
     mesh_handle = context->mesh_loader->LoadAsync("assets/snowy_mountain.msh");
