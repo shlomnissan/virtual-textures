@@ -65,7 +65,7 @@ auto Scene::OnAttached(vglx::SharedContextPointer context) -> void {
         .zoom_speed = 0.05f
     }));
 
-    mesh_handle = context->mesh_loader->LoadAsync("assets/snowy_mountain.msh");
+    mesh_handle = context->mesh_loader->LoadAsync("assets/snowy_mountain.obj");
 }
 
 auto Scene::OnUpdate([[maybe_unused]] float delta) -> void {

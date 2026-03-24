@@ -23,7 +23,7 @@ PageManager::PageManager(vglx::SharedContextPointer context) : context_(context)
         .height = static_cast<int>(atlas_size.y),
         .mips = 1,
         .format = vglx::Texture::Format::SRGBA8,
-        .color_space = vglx::Image::ColorSpace::sRGB
+        .color_space = vglx::Texture::ColorSpace::sRGB
     });
 
     tex_atlas_->min_filter = vglx::Texture::MinFilter::Linear;
