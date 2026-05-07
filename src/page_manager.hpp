@@ -7,8 +7,11 @@
 
 #pragma once
 
+#include <expected>
+#include <future>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include <vglx/vglx.hpp>
@@ -20,12 +23,12 @@
 struct ProcessingRequest {
     PageRequest request;
     PageSlot slot;
-    vglx::ImageLoadHandle handle;
+    std::future<std::expected<std::shared_ptr<vglx::Image>, std::string>> future;
 };
 
 class PageManager {
 public:
-    explicit PageManager(vglx::SharedContextPointer context);
+    PageManager();
 
     auto IngestFeedback(const std::span<const uint32_t> feedback) -> void;
 
@@ -47,6 +50,4 @@ private:
     std::vector<ProcessingRequest> processing_requests_ {};
 
     std::set<PageRequest> requests_ {};
-
-    vglx::SharedContextPointer context_ {nullptr};
 };

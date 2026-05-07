@@ -7,6 +7,8 @@
 
 #include "scene.hpp"
 
+#include <print>
+
 #include <vglx/imgui/imgui.h>
 
 #include "globals.hpp"
@@ -17,12 +19,6 @@
 #include "shaders/headers/material_vert.h"
 #include "shaders/headers/sphere_frag.h"
 #include "shaders/headers/sphere_vert.h"
-
-namespace {
-
-auto mesh_handle = vglx::MeshLoadHandle {};
-
-}
 
 Scene::Scene(
     std::shared_ptr<vglx::DynamicTexture2D> tex_atlas,
@@ -53,6 +49,19 @@ Scene::Scene(
         vglx::SphereGeometry::Create({.radius = 500.0f}),
         vglx::ShaderMaterial::Create({_SHADER_sphere_vert, _SHADER_sphere_frag})
     ))->GetMaterial()->two_sided = true;
+
+    auto mesh = vglx::LoadMesh("assets/snowy_mountain.obj");
+    if (!mesh.has_value()) {
+        std::println(stderr, "{}", mesh.error());
+        return;
+    }
+
+    auto root = std::move(mesh.value());
+    terrain_ = static_cast<vglx::Mesh*>(root->GetChildren().front().get());
+    terrain_->SetMaterial(default_material_);
+    terrain_->GetMaterial()->two_sided = true;
+    terrain_->SetScale(30.0f);
+    Add(std::move(root));
 }
 
 auto Scene::OnAttached(vglx::SharedContextPointer context) -> void {
@@ -64,19 +73,9 @@ auto Scene::OnAttached(vglx::SharedContextPointer context) -> void {
         .pan_speed = 0.05f,
         .zoom_speed = 0.05f
     }));
-
-    mesh_handle = context->mesh_loader->LoadAsync("assets/snowy_mountain.obj");
 }
 
 auto Scene::OnUpdate([[maybe_unused]] float delta) -> void {
-    if (auto result = mesh_handle.TryTake()) {
-        terrain_ = static_cast<vglx::Mesh*>(result.value()->GetChildren().front().get());
-        terrain_->SetMaterial(default_material_);
-        terrain_->GetMaterial()->two_sided = true;
-        terrain_->SetScale(30.0f);
-        Add(std::move(result.value()));
-    }
-
     if (tex_atlas_->renderer_id == 0) return;
 
     ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));

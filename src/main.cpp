@@ -56,7 +56,7 @@ auto main() -> int {
     });
 
     auto context = vglx::SharedContext::Create(&window, camera.get());
-    auto page_manager = PageManager {context.get()};
+    auto page_manager = PageManager {};
     auto timer = vglx::FrameTimer {true};
 
     auto scene = std::make_unique<Scene>(
@@ -68,8 +68,6 @@ auto main() -> int {
     while(!window.ShouldClose()) {
         window.PollEvents();
         window.BeginUIFrame();
-
-        context->load_scheduler->Pump();
 
         page_manager.FlushProcessingRequests();
 

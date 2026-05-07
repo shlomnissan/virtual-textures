@@ -8,6 +8,7 @@
 #include "page_manager.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <filesystem>
 #include <format>
 #include <print>
@@ -15,7 +16,9 @@
 
 namespace fs = std::filesystem;
 
-PageManager::PageManager(vglx::SharedContextPointer context) : context_(context) {
+using namespace std::chrono_literals;
+
+PageManager::PageManager() {
     static const auto atlas_size = kSlotSize * kAtlasSlots;
 
     tex_atlas_ = vglx::DynamicTexture2D::Create({
@@ -83,7 +86,9 @@ auto PageManager::RequestPage(const PageRequest& request) -> void {
     processing_requests_.emplace_back(ProcessingRequest {
         .request = request,
         .slot = alloc_result.slot.value(),
-        .handle = context_->image_loader->LoadAsync(path)
+        .future = std::async(std::launch::async, [path] {
+            return vglx::LoadImage(path);
+        })
     });
 }
 
@@ -92,32 +97,35 @@ auto PageManager::FlushProcessingRequests() -> void {
     static const auto slot_size_y = static_cast<int>(kSlotSize.y);
 
     std::erase_if(processing_requests_, [this](auto& req){
-        if (auto res = req.handle.TryTake()) {
-            tex_atlas_->UpdateSubregion(
-                0,
-                slot_size_x * req.slot.x,
-                slot_size_y * req.slot.y,
-                slot_size_x,
-                slot_size_y,
-                res.value()->data
-            );
+        if (req.future.wait_for(0s) != std::future_status::ready) {
+            return false;
+        }
 
-            auto entry = uint32_t {
-                0x1 | ((req.slot.x & 0xFFu) << 1) | ((req.slot.y & 0xFFu) << 9)
-            };
-
-            page_tables_.Write(req.request, entry);
-            page_cache_.Commit(req.request, req.slot);
+        auto result = req.future.get();
+        if (!result.has_value()) {
+            std::println(stderr, "{}", result.error());
             requests_.erase(req.request);
-
             return true;
         }
 
-        if (auto err = req.handle.TryError()) {
-            std::println(stderr, "{}", err.value());
-            return true;
-        }
-        return false;
+        tex_atlas_->UpdateSubregion(
+            0,
+            slot_size_x * req.slot.x,
+            slot_size_y * req.slot.y,
+            slot_size_x,
+            slot_size_y,
+            result.value()->data
+        );
+
+        auto entry = uint32_t {
+            0x1 | ((req.slot.x & 0xFFu) << 1) | ((req.slot.y & 0xFFu) << 9)
+        };
+
+        page_tables_.Write(req.request, entry);
+        page_cache_.Commit(req.request, req.slot);
+        requests_.erase(req.request);
+
+        return true;
     });
 }
 
