@@ -16,8 +16,6 @@ public:
         std::shared_ptr<vglx::DynamicTexture2D> tex_tables
     );
 
-    auto OnAttached(vglx::SharedContextPointer context) -> void override;
-
     auto OnUpdate(float delta) -> void override;
 
     auto SetFeedbackMode(bool enabled) -> void;

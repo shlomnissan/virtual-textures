@@ -64,17 +64,6 @@ Scene::Scene(
     Add(std::move(root));
 }
 
-auto Scene::OnAttached(vglx::SharedContextPointer context) -> void {
-    Add(vglx::OrbitControls::Create(context->camera, {
-        .radius = 350.0f,
-        .pitch = vglx::math::DegToRad(20.0f),
-        .yaw = vglx::math::DegToRad(30.0f),
-        .orbit_speed = 0.5f,
-        .pan_speed = 0.05f,
-        .zoom_speed = 0.05f
-    }));
-}
-
 auto Scene::OnUpdate([[maybe_unused]] float delta) -> void {
     if (tex_atlas_->renderer_id == 0) return;
 

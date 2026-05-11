@@ -48,6 +48,15 @@ auto main() -> int {
         .enable_readback = true
     });
 
+    auto page_manager = PageManager {};
+
+    auto timer = vglx::FrameTimer {true};
+
+    auto scene = std::make_unique<Scene>(
+        page_manager.GetAtlasTexture(),
+        page_manager.GetPageTablesTexture()
+    );
+
     auto camera = vglx::PerspectiveCamera::Create({
         .fov = vglx::math::DegToRad(60.0f),
         .aspect = window.AspectRatio(),
@@ -55,15 +64,14 @@ auto main() -> int {
         .far = 1000.0f
     });
 
-    auto context = vglx::SharedContext::Create(&window, camera.get());
-    auto page_manager = PageManager {};
-    auto timer = vglx::FrameTimer {true};
-
-    auto scene = std::make_unique<Scene>(
-        page_manager.GetAtlasTexture(),
-        page_manager.GetPageTablesTexture()
-    );
-    scene->SetContext(context.get());
+    scene->Add(vglx::OrbitControls::Create(camera.get(), {
+        .radius = 350.0f,
+        .pitch = vglx::math::DegToRad(20.0f),
+        .yaw = vglx::math::DegToRad(30.0f),
+        .orbit_speed = 0.5f,
+        .pan_speed = 0.05f,
+        .zoom_speed = 0.05f
+    }));
 
     while(!window.ShouldClose()) {
         window.PollEvents();
