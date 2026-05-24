@@ -19,7 +19,6 @@ auto main() -> int {
         .title = "Virtual Textures",
         .width = kWindowWidth,
         .height = kWindowHeight,
-        .sample_count = kSampleCount,
         .vsync = false
     }};
 
