@@ -60,7 +60,7 @@ Scene::Scene(
     terrain_ = static_cast<vglx::Mesh*>(root->GetChildren().front().get());
     terrain_->SetMaterial(default_material_);
     terrain_->GetMaterial()->two_sided = true;
-    terrain_->SetScale(30.0f);
+    terrain_->transform.SetScale(30.0f);
     Add(std::move(root));
 }
 

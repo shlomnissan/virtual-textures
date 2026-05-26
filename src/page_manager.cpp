@@ -114,7 +114,7 @@ auto PageManager::FlushProcessingRequests() -> void {
             slot_size_y * req.slot.y,
             slot_size_x,
             slot_size_y,
-            result.value()->data
+            std::get<std::vector<uint8_t>>(result.value()->data)
         );
 
         auto entry = uint32_t {
