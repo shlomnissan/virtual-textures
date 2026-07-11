@@ -67,10 +67,16 @@ auto main() -> int {
         .radius = 350.0f,
         .pitch = vglx::math::DegToRad(20.0f),
         .yaw = vglx::math::DegToRad(30.0f),
-        .orbit_speed = 0.5f,
-        .pan_speed = 0.05f,
-        .zoom_speed = 0.05f
     }));
+
+    window.OnResize([&](const vglx::ResizeParameters& params){
+        renderer.SetViewport(
+            0, 0,
+            params.framebuffer_width,
+            params.framebuffer_height
+        );
+        camera->Resize(params.window_width, params.window_height);
+    });
 
     while(!window.ShouldClose()) {
         window.PollEvents();
