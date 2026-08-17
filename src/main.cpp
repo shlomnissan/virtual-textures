@@ -67,6 +67,7 @@ auto main() -> int {
         .radius = 350.0f,
         .pitch = vglx::math::DegToRad(20.0f),
         .yaw = vglx::math::DegToRad(30.0f),
+        .zoom_speed = 0.1f
     }));
 
     window.OnResize([&](const vglx::ResizeParameters& params){

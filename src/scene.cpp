@@ -48,7 +48,7 @@ Scene::Scene(
     Add(vglx::Mesh::Create(
         vglx::SphereGeometry::Create({.radius = 500.0f}),
         vglx::ShaderMaterial::Create({_SHADER_sphere_vert, _SHADER_sphere_frag})
-    ))->GetMaterial()->two_sided = true;
+    ))->GetMaterial()->side = vglx::Material::Side::TwoSided;
 
     auto mesh = vglx::LoadMesh("assets/snowy_mountain.obj");
     if (!mesh.has_value()) {
@@ -59,7 +59,7 @@ Scene::Scene(
     auto root = std::move(mesh.value());
     terrain_ = static_cast<vglx::Mesh*>(root->GetChildren().front().get());
     terrain_->SetMaterial(default_material_);
-    terrain_->GetMaterial()->two_sided = true;
+    terrain_->GetMaterial()->side = vglx::Material::Side::TwoSided;
     terrain_->transform.SetScale(30.0f);
     Add(std::move(root));
 }
