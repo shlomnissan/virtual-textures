@@ -9,8 +9,6 @@
 
 #include <print>
 
-#include <vglx/imgui/imgui.h>
-
 #include "globals.hpp"
 
 #include "shaders/headers/feedback_frag.h"
@@ -65,28 +63,7 @@ Scene::Scene(
 }
 
 auto Scene::OnUpdate([[maybe_unused]] float delta) -> void {
-    if (tex_atlas_->renderer_id == 0) return;
-
-    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
-    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(144, 163), ImGuiCond_Always);
-
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoResize;
-
-    if (ImGui::Begin("Texture Atlas", nullptr, window_flags)) {
-        ImGui::Image(
-            (ImTextureID)(intptr_t)tex_atlas_->renderer_id,
-            ImVec2(128, 128),
-            ImVec2(0, 1),
-            ImVec2(1, 0)
-        );
-    }
-
-    ImGui::End();
-
-    ImGui::PopStyleColor();
+    // TODO: render atlas preview
 }
 
 auto Scene::SetFeedbackMode(bool enabled) -> void {
