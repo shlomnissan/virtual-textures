@@ -12,6 +12,7 @@
 #include "globals.hpp"
 #include "page_manager.hpp"
 
+#include "overlay.hpp"
 #include "scene.hpp"
 
 auto main() -> int {
@@ -31,7 +32,8 @@ auto main() -> int {
         .framebuffer_width = window.FramebufferWidth(),
         .framebuffer_height = window.FramebufferHeight(),
         .sample_count = kSampleCount,
-        .clear_color = 0x000000
+        .clear_color = 0x000000,
+        .auto_clear = false
     }};
 
     if (auto result = renderer.Initialize(); !result.has_value()) {
@@ -63,6 +65,13 @@ auto main() -> int {
         .far = 1000.0f
     });
 
+    auto overlay = std::make_unique<Overlay>(page_manager.GetAtlasTexture());
+    auto overlay_camera = vglx::OrthographicCamera::Create({
+        .left = 0.0f, .right = static_cast<float>(kWindowWidth),
+        .top = 0.0f,  .bottom = static_cast<float>(kWindowHeight),
+        .near = 0.1f, .far = 100.0f
+    });
+
     scene->Add(vglx::OrbitControls::Create(camera.get(), {
         .radius = 350.0f,
         .pitch = vglx::math::DegToRad(20.0f),
@@ -77,6 +86,7 @@ auto main() -> int {
             params.framebuffer_height
         );
         camera->Resize(params.window_width, params.window_height);
+        overlay_camera->Resize(params.window_width, params.window_height);
     });
 
     while(!window.ShouldClose()) {
@@ -87,6 +97,7 @@ auto main() -> int {
 
         scene->Advance(timer.Tick());
         scene->SetFeedbackMode(true);
+        renderer.Clear(feedback_target.get());
         renderer.Render(scene.get(), camera.get(), feedback_target.get());
 
         auto data = feedback_target->ReadColorData();
@@ -98,7 +109,9 @@ auto main() -> int {
 
         page_manager.IngestFeedback(pixels);
         scene->SetFeedbackMode(false);
+        renderer.Clear();
         renderer.Render(scene.get(), camera.get());
+        renderer.Render(overlay.get(), overlay_camera.get());
 
         window.EndUIFrame();
         window.SwapBuffers();

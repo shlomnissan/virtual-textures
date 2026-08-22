@@ -21,7 +21,7 @@
 Scene::Scene(
     std::shared_ptr<vglx::DynamicTexture2D> tex_atlas,
     std::shared_ptr<vglx::DynamicTexture2D> tex_tables
-) : tex_atlas_(tex_atlas) {
+) {
     default_material_ = vglx::ShaderMaterial::Create({
         _SHADER_material_vert,
         _SHADER_material_frag,
@@ -60,10 +60,6 @@ Scene::Scene(
     terrain_->GetMaterial()->side = vglx::Material::Side::TwoSided;
     terrain_->transform.SetScale(30.0f);
     Add(std::move(root));
-}
-
-auto Scene::OnUpdate([[maybe_unused]] float delta) -> void {
-    // TODO: render atlas preview
 }
 
 auto Scene::SetFeedbackMode(bool enabled) -> void {

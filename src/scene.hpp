@@ -16,8 +16,6 @@ public:
         std::shared_ptr<vglx::DynamicTexture2D> tex_tables
     );
 
-    auto OnUpdate(float delta) -> void override;
-
     auto SetFeedbackMode(bool enabled) -> void;
 
 private:
@@ -25,5 +23,4 @@ private:
 
     std::shared_ptr<vglx::ShaderMaterial> default_material_ {};
     std::shared_ptr<vglx::ShaderMaterial> feedback_material_ {};
-    std::shared_ptr<vglx::DynamicTexture2D> tex_atlas_ {};
 };

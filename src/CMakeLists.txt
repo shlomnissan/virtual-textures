@@ -11,6 +11,8 @@ set(SOURCE_CODE
     page_cache.hpp
     page_manager.cpp
     page_manager.hpp
+    overlay.cpp
+    overlay.hpp
     page_tables.cpp
     page_tables.hpp
     scene.cpp
