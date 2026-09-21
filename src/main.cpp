@@ -83,8 +83,10 @@ auto main() -> int {
         renderer.SetViewport(
             0, 0,
             params.framebuffer_width,
-            params.framebuffer_height
+            params.framebuffer_height,
+            params.content_scale
         );
+
         camera->Resize(params.window_width, params.window_height);
         overlay_camera->Resize(params.window_width, params.window_height);
     });
