@@ -26,18 +26,9 @@ The demo renders a simple terrain using a virtual texture. A minimap overlay dis
 
 ### Building the Project
 
-The project uses [CMake](http://cmake.org/) and [VGLX](https://vglx.org) for rendering. The easiest way to install VGLX is with the Python installer included in the repository. It guides the process and builds the engine using the correct presets for your system.
+The project uses [CMake](http://cmake.org/) 3.25 or newer and [VGLX](https://vglx.org) for rendering. VGLX does not need to be installed: the first configure downloads it and builds it as part of the project, which takes a couple of minutes.
 
-```bash
-# clone the repository
-git clone https://github.com/shlomnissan/vglx.git
-cd vglx
-
-# run the installer
-python3 -m tools.installer.main
-```
-
-With VGLX installed, you can build this prototype like any other CMake project.
+Build it like any other CMake project:
 
 ```bash
 # clone the repository
